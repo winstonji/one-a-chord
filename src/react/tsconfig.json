@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "removeComments": false,
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./src",
+    "paths": {
+      "*": [
+        "*",
+        "src/*",
+        "../global/*"
+      ]
+    }
+  },
+  "include": [
+    "./view/**/*.tsx",
+    "../../global/**/*.ts"
+  ]
+}

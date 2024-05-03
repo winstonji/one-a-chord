@@ -1,0 +1,82 @@
+@import './constants';
+
+@font-face {
+   font-family: 'Roboto';
+   src: url('../assets/font/roboto/Roboto-Regular.ttf') format('truetype');
+ }
+
+html, body{
+   height:100%;
+   width: 100%;
+   margin: 0;
+   overflow: hidden;
+   font-family: 'Roboto';
+   user-select: none;
+}
+
+#root{
+   height:100%;
+   width: 100%;
+}
+
+.oac-main-container{
+    display: flex;
+    justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+}
+
+.oac-overlay-view{
+   position: absolute;
+   display: flex;
+   justify-content: stretch;
+   align-items: stretch;
+   flex-direction: column;
+   overflow-y: auto;
+   height: 100%;
+   width: 100%;
+   padding: 10px;
+   z-index: 1;
+}
+
+div.oac-row{
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+div.oac-col{
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-start;
+   align-items: center;
+}
+
+div.oac-row-flex-start{
+   justify-content: flex-start;
+}
+
+div.oac-row-flex-end{
+   justify-content: flex-end;
+}
+
+div.oac-row-space-between{
+   justify-content: space-between;
+}
+
+div.oac-row-align-top{
+   align-items: flex-start;
+}
+
+div.oac-row-align-end{
+   align-items: flex-end;
+}
+
+div.oac-row-align-stretch{
+   align-items: stretch;
+}
+
