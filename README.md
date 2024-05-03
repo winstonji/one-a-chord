@@ -1,4 +1,4 @@
-This is my little dumb music player app
+
 
 to run:
 npm run start
