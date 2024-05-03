@@ -1,11 +1,8 @@
 .idea/
 node_modules/
-physicOctoRotaryPhone.iml
 .editorconfig
 .angular/
 dist/
-plootunes.db
-plootunes.sqlite
 *.code-workspace
 properties.json
 .vscode/extensions.json
