@@ -2,7 +2,7 @@
   "name": "react",
   "version": "0.0.0",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "webpack-dev-server",
     "build": "",
     "electron": "tsc --project ./src/electron/tsconfig.json && electron ./src/electron/dist/app.js"
   },
