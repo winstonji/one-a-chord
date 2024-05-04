@@ -1,26 +1,24 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Electron w/ Debug",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceRoot}/src/electron/app.ts",
-            "stopOnEntry": false,
-            "args": [],
-            "cwd": "${workspaceRoot}/src/electron",
-            "runtimeExecutable": "${workspaceRoot}/src/electron/node_modules/.bin/electron.cmd",
-            "runtimeArgs": [
-                "--enable-logging"
-            ],
-            "env": {},
-            "sourceMaps": false,
-            // "outFiles": [
-            //     "${workspaceRoot}/src/electron/dist/**/*.js"
-            // ],
-            "internalConsoleOptions": "openOnSessionStart",
-            "console": "integratedTerminal",
-            "preLaunchTask": "build:sm"
-        }
-    ]
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Electron w/ Debug",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceRoot}/src/electron/app.ts",
+			"stopOnEntry": false,
+			"args": [],
+			"cwd": "${workspaceRoot}/src/electron",
+			"runtimeExecutable": "${workspaceRoot}/src/electron/node_modules/.bin/electron.cmd",
+			"runtimeArgs": ["--enable-logging"],
+			"env": {},
+			"sourceMaps": false,
+			// "outFiles": [
+			//     "${workspaceRoot}/src/electron/dist/**/*.js"
+			// ],
+			"internalConsoleOptions": "openOnSessionStart",
+			"console": "integratedTerminal",
+			"preLaunchTask": "build:sm"
+		}
+	]
 }

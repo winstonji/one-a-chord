@@ -5,12 +5,14 @@
 	"scripts": {
 		"react": "cd ./src/react && webpack-dev-server",
 		"electron": "tsc --project ./src/electron/tsconfig.json && electron ./src/electron/dist/app.js",
-		"install:all": "npm install && cd ./src/electron && npm install && cd ../react && npm install"
+		"install:all": "npm install && cd ./src/electron && npm install && cd ../react && npm install",
+		"pretty": "prettier --write --use-tabs \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
 	},
 	"private": true,
 	"devDependencies": {
 		"css-loader": "^7.1.1",
 		"music-metadata": "^7.14.0",
+		"prettier": "^3.2.5",
 		"sass": "^1.75.0",
 		"sass-loader": "^14.2.1",
 		"style-loader": "^4.0.0",

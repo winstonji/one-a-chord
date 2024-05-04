@@ -1,14 +1,13 @@
-import { BaseHandlerService } from "./baseHandlerService";
-import { handler } from "./decorators/handlerDecorator";
+import { BaseHandlerService } from './baseHandlerService'
+import { handler } from './decorators/handlerDecorator'
 
-export class ExampleHandler extends BaseHandlerService{
+export class ExampleHandler extends BaseHandlerService {
+	constructor() {
+		super('ExampleHandler')
+	}
 
-    constructor() {
-        super('ExampleHandler');
-    }
-
-    @handler
-    async exampleHandler(): Promise<string>{ 
-        return 'hello this data is from the backend'
-      }
+	@handler
+	async exampleHandler(): Promise<string> {
+		return 'hello this data is from the backend'
+	}
 }
