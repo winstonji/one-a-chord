@@ -3,7 +3,7 @@ import '../styles/global.scss'
 const Home = () => {
 	const [backendData, setBackendData] = useState<string | undefined>()
 	useEffect(() => {
-		;(window as any).electron.ipcRenderer
+		(window as any).electron.ipcRenderer
 			.invoke('exampleHandler')
 			.then((data: string) => {
 				setBackendData(data)
