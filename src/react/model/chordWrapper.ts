@@ -7,5 +7,7 @@ export class ChordWrapper{
     private extension:string;
     private slash:Key;
 
+    private lyricSegment;
+
     constructor(){}
 }
