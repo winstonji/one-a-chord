@@ -1,15 +1,15 @@
 export enum Key{
-    Gb = -6,
-    G = -5,
-    Ab = -4,
-    A = -3,
-    Bb = -2,
-    B = -1,
-    C = 0,
+    Cs = 0,
     Db = 1,
-    D = 2,
+    Ds = 2,
     Eb = 3,
-    E = 4,
-    F = 5,
-    Fs = 6
+    Es = 4,
+    Fb = 5,
+    Fs = 6,
+    Gb = 7,
+    Gs = 8,
+    Ab = 9,
+    As = 10,
+    Bb = 11,
+    Bs = 12
 }
