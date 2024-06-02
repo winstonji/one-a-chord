@@ -8,8 +8,6 @@ import { ChartMetaData } from '../model/chartMetaData';
 export const ChartContext = createContext(null); 
 
 const ProgramWindow = () => {
-
-
 	return (<ChartContext.Provider value={generateTestChart()}>
         {
           <>

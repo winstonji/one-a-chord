@@ -11,5 +11,6 @@
 			"*": ["*", "src/*", "../global/*"]
 		}
 	},
-	"include": ["./view/**/*.tsx", "./view/**/*.ts", "./model/**/*.ts", "../../global/**/*.ts"]
+	"include": ["./**/*.ts", "./**/*.tsx", "../../global/**/*.ts"],
+	"exclude": ["./node_modules"]
 }
