@@ -2,8 +2,8 @@ import { Line } from "./line";
 
 export class Block{
     
-    private header:string;
-    private lines:Line[];
+    public header:string;
+    public lines:Line[];
     
     constructor(){}
 

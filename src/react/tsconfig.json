@@ -11,5 +11,5 @@
 			"*": ["*", "src/*", "../global/*"]
 		}
 	},
-	"include": ["./view/**/*.tsx", "../../global/**/*.ts"]
+	"include": ["./view/**/*.tsx", "./view/**/*.ts", "./model/**/*.ts", "../../global/**/*.ts"]
 }

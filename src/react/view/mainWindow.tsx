@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import '../styles/global.scss'
-const Home = () => {
+import ProgramWindow from './programWindow'
+const MainWindow = () => {
 	// const [backendData, setBackendData] = useState<string | undefined>()
 	// useEffect(() => {
 	// 	(window as any).electron.ipcRenderer
@@ -12,9 +13,9 @@ const Home = () => {
 
 	return (
 		<div className="oac-main-container">
-			Hello world!
+			<ProgramWindow/>
 		</div>
 	)
 }
 
-export default Home
+export default MainWindow

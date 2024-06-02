@@ -2,12 +2,12 @@ import { Key } from "./key";
 
 export class ChordWrapper{
 
-    private chord:Key;
-    private quality:string;
-    private extension:string;
-    private slash:Key;
+    public chord:Key;
+    public quality?:string;
+    public extension?:string;
+    public slash?:Key;
 
-    private lyricSegment;
+    public lyricSegment:string;
 
     constructor(){}
 }
