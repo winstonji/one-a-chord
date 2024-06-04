@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-const Block = () => {
+const LineComponent = () => {
 	return (<></>);
 }
 
-export default Block;
+export default LineComponent;
