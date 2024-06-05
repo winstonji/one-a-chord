@@ -1,11 +1,18 @@
-import { Key } from "./key";
+import { KeyValue } from "./key";
 
 export class ChordWrapper{
 
-    private chord:Key;
-    private quality:string;
-    private extension:string;
-    private slash:Key;
+    public root?:KeyValue;
+    public quality?:string;
+    public extension?:string;
+    public slash?:KeyValue;
 
-    constructor(){}
+    public lyricSegment:string;
+
+    constructor(root:KeyValue, quality:string, extension:string, slash:KeyValue, lyricSegment:string){
+        this.root = root;
+        this.quality = quality;
+        this.extension = extension;
+        this.slash = slash;
+    }
 }

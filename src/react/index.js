@@ -1,5 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import Home from './view/home'
-
-ReactDOM.render(<Home />, document.getElementById('root'))
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import MainWindow from './view/mainWindow';
+const domNode = document.getElementById('root');
+const root = createRoot(domNode);
+root.render(<MainWindow/>);
