@@ -8,10 +8,10 @@ function ChordWrapperComponent(chordWrapper:ChordWrapper) {
 	
     
     
-    return (<>
+    return (<div className='oac-col oac-chord-wrapper oac-row-flex-end'>
         <ChordSymbolComponent {...chordWrapper}/>
         <LyricSegmentComponent {...chordWrapper}/>
-    </>);
+    </div>);
 }
 
 export default ChordWrapperComponent;

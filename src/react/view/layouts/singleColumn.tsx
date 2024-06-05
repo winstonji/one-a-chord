@@ -14,9 +14,9 @@ function SingleColumn(){
 
 	return (<>
         <ChartMetaDataComponent {...metadata}/>
-        <BlockComponent {...blocks[0]}/>
-        <BlockComponent {...blocks[1]}/>
-        <BlockComponent {...blocks[2]}/>
+        {blocks.map((block: Block) => {
+            return <BlockComponent {...block}/>
+        })}
     </>);
 }
 

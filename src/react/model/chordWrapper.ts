@@ -2,7 +2,7 @@ import { KeyValue } from "./key";
 
 export class ChordWrapper{
 
-    public root:KeyValue;
+    public root?:KeyValue;
     public quality?:string;
     public extension?:string;
     public slash?:KeyValue;

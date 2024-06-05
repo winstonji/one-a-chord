@@ -39,6 +39,31 @@ function generateTestChart(): Chart{
                             root:Key.Gs,
                             quality:"sus",
                             lyricSegment:"Jesus"
+                        },
+                        {
+                            root:Key.Gs,
+                            quality:"sus",
+                            lyricSegment:"Jesus"
+                        },
+                        {
+                            lyricSegment:"Jesus"
+                        }
+                    ]
+                },
+                {
+                    chordWrappers:[
+                        {
+                            root:Key.Gs,
+                            quality:"sus",
+                            extension:"(b5b13)",
+                            lyricSegment:"wow"
+                        },
+                        {
+                            root:Key.Gs,
+                            lyricSegment:"wow"
+                        },
+                        {
+                            lyricSegment:"wow"
                         }
                     ]
                 }
