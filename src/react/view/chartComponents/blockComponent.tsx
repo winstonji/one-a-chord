@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react'
-const BlockComponent = () => {
+import { Block } from '../../model/block';
+import LineComponent from './lineComponent';
+import { Line } from '../../model/line';
+function BlockComponent (block:Block){
+
+	const lines:Line[] = block.lines;
+
 	return (<>
-		<h3></h3>
+		<h3>{block.header}</h3>
+		<LineComponent {...lines[0]}/>
 	</>);
 }
 

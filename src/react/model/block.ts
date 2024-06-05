@@ -5,6 +5,9 @@ export class Block{
     public header:string;
     public lines:Line[];
     
-    constructor(){}
+    constructor(header:string, lines:Line[]){
+        this.header = header;
+        this.lines = lines;
+    }
 
 }

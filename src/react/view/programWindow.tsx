@@ -8,7 +8,10 @@ import { ChartMetaData } from '../model/chartMetaData';
 export const ChartContext = createContext(null); 
 
 const ProgramWindow = () => {
-	return (<ChartContext.Provider value={generateTestChart()}>
+
+    const [chart, setChart] = useState(generateTestChart);
+
+	return (<ChartContext.Provider value={chart}>
         {
           <>
             <Toolbar/>
@@ -25,7 +28,7 @@ export default ProgramWindow;
 
 function generateTestChart(): Chart{
     let testChart: Chart = new Chart();
-    testChart.metaData = new ChartMetaData();
+    testChart.metaData = new ChartMetaData("Title McTitleface", Key.Ab, 3, 4, 69);
     testChart.blocks = [
         {
             header:"Verse 1",
@@ -33,7 +36,7 @@ function generateTestChart(): Chart{
                 {
                     chordWrappers:[
                         {
-                            chord:Key.Gs,
+                            root:Key.Gs,
                             quality:"sus",
                             lyricSegment:"Jesus"
                         }
@@ -42,12 +45,12 @@ function generateTestChart(): Chart{
             ]
         },
         {
-            header:"Verse 1",
+            header:"Verse 2",
             lines:[
                 {
                     chordWrappers:[
                         {
-                            chord:Key.Gs,
+                            root:Key.Gs,
                             quality:"sus",
                             lyricSegment:"Jesus"
                         }
@@ -56,12 +59,12 @@ function generateTestChart(): Chart{
             ]
         },
         {
-            header:"Verse 1",
+            header:"Verse 3",
             lines:[
                 {
                     chordWrappers:[
                         {
-                            chord:Key.Gs,
+                            root:Key.Gs,
                             quality:"sus",
                             lyricSegment:"Jesus"
                         }

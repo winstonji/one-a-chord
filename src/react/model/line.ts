@@ -4,5 +4,7 @@ export class Line{
 
     public chordWrappers:ChordWrapper[];
 
-    constructor(){}
+    constructor(chordWrappers:ChordWrapper[]){
+        this.chordWrappers = chordWrappers;
+    }
 }

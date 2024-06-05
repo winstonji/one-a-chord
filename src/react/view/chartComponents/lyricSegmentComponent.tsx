@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
-const LyricSegmentComponent = () => {
-	return (<></>);
+import { ChordWrapper } from '../../model/chordWrapper';
+const LyricSegmentComponent = (chordWrapper:ChordWrapper) => {
+	return (<>
+		{chordWrapper.lyricSegment}
+	</>);
 }
 
 export default LyricSegmentComponent;

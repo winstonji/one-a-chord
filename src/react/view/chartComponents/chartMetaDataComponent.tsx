@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState} from 'react'
 import { ChartMetaData } from '../../model/chartMetaData';
 
 
-const ChartMetaDataComponent = (chartMetaData: ChartMetaData) => {
+function ChartMetaDataComponent(chartMetaData:ChartMetaData){
+
 	return (<>
-		<strong>{chartMetaData.title}</strong>
+		<h1>{chartMetaData.title}</h1>
 		<p>{chartMetaData.keyValue.printName}</p>
 		<p>{chartMetaData.signatureTop}</p>
 		<p>{chartMetaData.signatureBottom}</p>
