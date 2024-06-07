@@ -4,6 +4,7 @@ import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
 import { Key } from '../model/key';
 import { ChartMetaData } from '../model/chartMetaData';
+import { ChordWrapper } from '../model/chordWrapper';
 
 export const ChartContext = createContext(null); 
 
@@ -35,36 +36,18 @@ function generateTestChart(): Chart{
             lines:[
                 {
                     chordWrappers:[
-                        {
-                            root:Key.Gs,
-                            quality:"sus",
-                            lyricSegment:"Jesus"
-                        },
-                        {
-                            root:Key.Gs,
-                            quality:"sus",
-                            lyricSegment:"Jesus"
-                        },
-                        {
-                            lyricSegment:"Jesus"
-                        }
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+
                     ]
                 },
                 {
                     chordWrappers:[
-                        {
-                            root:Key.Gs,
-                            quality:"sus",
-                            extension:"(b5b13)",
-                            lyricSegment:"wow"
-                        },
-                        {
-                            root:Key.Gs,
-                            lyricSegment:"wow"
-                        },
-                        {
-                            lyricSegment:"wow"
-                        }
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+
                     ]
                 }
             ]
@@ -74,11 +57,8 @@ function generateTestChart(): Chart{
             lines:[
                 {
                     chordWrappers:[
-                        {
-                            root:Key.Gs,
-                            quality:"sus",
-                            lyricSegment:"Jesus"
-                        }
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+
                     ]
                 }
             ]
@@ -88,11 +68,8 @@ function generateTestChart(): Chart{
             lines:[
                 {
                     chordWrappers:[
-                        {
-                            root:Key.Gs,
-                            quality:"sus",
-                            lyricSegment:"Jesus"
-                        }
+                        new ChordWrapper(Key.Gs, "sus", "", Key.Bs, "Jesus"),
+
                     ]
                 }
             ]

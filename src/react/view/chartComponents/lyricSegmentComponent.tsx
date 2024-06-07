@@ -1,14 +1,25 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { ChordWrapper } from '../../model/chordWrapper'
 
 function LyricSegmentComponent(chordWrapper: ChordWrapper) {
-    const [text, setText] = useState(chordWrapper.lyricSegment)
+    const [lyric, setLyric] = useState(chordWrapper.lyricSegment);
 
-    return (<div
-		className="oac-lyric-segment"
-		contentEditable>
-		{text}
-	</div>)
+    const updateLyric = (e: React.FormEvent<HTMLDivElement>) => {
+        const newLyric = e.currentTarget.textContent || '';
+        setLyric(newLyric);
+        chordWrapper.lyricSegment = newLyric;
+        console.log(chordWrapper.lyricSegment);
+    };
+
+    return (
+        <div
+            className="oac-lyric-segment"
+            contentEditable
+            onBlur={updateLyric}
+        >
+            {lyric}
+        </div>
+    );
 }
 
-export default LyricSegmentComponent
+export default LyricSegmentComponent;
