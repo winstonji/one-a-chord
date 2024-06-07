@@ -1,10 +1,17 @@
+import { Block } from "./block";
 import { ChordWrapper } from "./chordWrapper";
+import { ModelWithId } from "./modelWithId";
+import { v4 as uuidv4 } from 'uuid';
 
-export class Line{
+export class Line implements ModelWithId{
 
-    public chordWrappers:ChordWrapper[];
+    public chordWrappers?:ChordWrapper[];
+    public id: string;
+    public parent: Block;
 
-    constructor(chordWrappers:ChordWrapper[]){
-        this.chordWrappers = chordWrappers;
+    constructor(parent: Block){
+        this.id = uuidv4();
+        this.parent = parent;
     }
+    
 }
