@@ -1,9 +1,9 @@
 import { KeyValue } from "./key";
 import { Line } from "./line";
-import { ModelWithId } from "./modelWithId";
+import { Identifiable } from "./interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 
-export class ChordWrapper implements ModelWithId{
+export class ChordWrapper implements Identifiable{
 
     
     public root?:KeyValue;
@@ -14,8 +14,8 @@ export class ChordWrapper implements ModelWithId{
     public id: string;
     public parent: Line;
 
-    constructor(parent: Line, root:KeyValue, quality:string, extension:string, slash:KeyValue, lyricSegment:string){
-        this.id = uuidv4();
+    constructor(parent: Line, id: string, root:KeyValue, quality:string, extension:string, slash:KeyValue, lyricSegment:string){
+        this.id = id;
         this.parent = parent;
         this.root = root;
         this.quality = quality;

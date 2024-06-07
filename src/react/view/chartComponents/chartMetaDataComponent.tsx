@@ -8,7 +8,7 @@ function ChartMetaDataComponent(chartMetaData:ChartMetaData){
 	return (<div className='oac-col oac-row-align-top'>
 		<h1 className='oac-title'>{chartMetaData.title}</h1>
 		<div className='oac-row'>
-			<p className='oac-metadata'>Key - {chartMetaData.keyValue.printName}</p>
+			<p className='oac-metadata'>Key - {chartMetaData?.keyValue?.printName ?? ''}</p>
 			<p>Time - </p>
 			<div className='oac-col oac-metadata'>
 				<p className='oac-time-signature'>{chartMetaData.signatureTop}</p>

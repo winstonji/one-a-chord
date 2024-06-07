@@ -8,13 +8,15 @@ import BlockComponent from '../chartComponents/blockComponent';
 
 function SingleColumn(){
 
-    const chart:Chart = useContext(ChartContext);
+    const {chart} = useContext(ChartContext);
+    console.log(chart)
     const metadata: ChartMetaData = chart.metaData;
     const blocks: Block[] = chart.blocks;
 
 	return (<>
         <ChartMetaDataComponent {...metadata}/>
-        {blocks.map((block: Block) => {
+        {!blocks && <strong>No blocks</strong>}
+        {blocks && blocks.length > 0 && blocks.map((block: Block) => {
             return <BlockComponent {...block}/>
         })}
     </>);
