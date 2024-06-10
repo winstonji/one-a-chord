@@ -50,9 +50,10 @@ export class ChartService {
     //EX: [id1, id2, id3]. This will first look up the Block with id===id1, then it will get the children of block (lines) and look up the line with id===id2
     //Finally, we will get the children of line (chordWrappers) and look up the chordWrapper with id===id3.
     //We will then return chordWrapper as it is the element we were looking for.
-    private locateElement(identifiable: Identifiable, chart: Chart): Identifiable | undefined
+    //TODO: make this generic
+    private locateElement(target: Identifiable, chart: Chart): Identifiable | undefined
     {
-        const idTrace: string[] = this.traceIds(identifiable);
+        const idTrace: string[] = this.traceIds(target);
         return this.locateElementHelper(idTrace, 0, chart.blocks);
     }
 
