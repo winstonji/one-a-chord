@@ -1,23 +1,23 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { ChordWrapper } from '../../model/chordWrapper'
+import { ChartContext } from '../programWindow';
+import { ChartService } from '../../services/chartService';
 
 function LyricSegmentComponent(chordWrapper: ChordWrapper) {
-    const [lyric, setLyric] = useState(chordWrapper.lyricSegment);
+    
+    const {chartService}: {chartService: ChartService} = useContext(ChartContext);
 
-    const updateLyric = (e: React.FormEvent<HTMLDivElement>) => {
-        const newLyric = e.currentTarget.textContent || '';
-        setLyric(newLyric);
-        chordWrapper.lyricSegment = newLyric;
-        console.log(chordWrapper.lyricSegment);
+    const updateLyric = (updatedLyric: string) => {
+        chartService.updateLyric(updatedLyric, chordWrapper)
     };
 
     return (
         <div
             className="oac-lyric-segment"
             contentEditable
-            onBlur={updateLyric}
+            onBlur={(event) => {updateLyric(event.target.innerText)}}
         >
-            {lyric}
+            {chordWrapper.lyricSegment}
         </div>
     );
 }
