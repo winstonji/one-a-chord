@@ -23,9 +23,9 @@ export class ChartService {
             //We have to copy the original chord chart because otherwise we cannot modify it as it is a react immutable object
             //After copying it, we can just lookup and modify the object we want
             const updatedChart = cloneDeep(previousChart);
-            const chordWrapperToUpdate = this.locateElement(chordWrapper, updatedChart);
+            const chordWrapperToUpdate: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, updatedChart);
 
-            (chordWrapperToUpdate as ChordWrapper).lyricSegment = lyric;
+            chordWrapperToUpdate.setLyricSegment(lyric);
 
             return updatedChart;
         });
@@ -44,7 +44,7 @@ export class ChartService {
             // Deep clone the chart
             const updatedChart = cloneDeep(previousChart);
             // Locate and update the chord wrapper
-            const chordWrapperToUpdate: ChordWrapper = (this.locateElement(chordWrapper, updatedChart) as ChordWrapper);
+            const chordWrapperToUpdate: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, updatedChart);
 
             chordWrapperToUpdate.setChordSymbol(chordSymbolString);
             return updatedChart;
@@ -75,14 +75,13 @@ export class ChartService {
     //EX: [id1, id2, id3]. This will first look up the Block with id===id1, then it will get the children of block (lines) and look up the line with id===id2
     //Finally, we will get the children of line (chordWrappers) and look up the chordWrapper with id===id3.
     //We will then return chordWrapper as it is the element we were looking for.
-    //TODO: make this generic
-    private locateElement(target: Identifiable, chart: Chart): Identifiable | undefined
+    private locateElement<T extends Identifiable>(target: Identifiable, chart: Chart): T | undefined
     {
         const idTrace: string[] = this.traceIds(target);
-        return this.locateElementHelper(idTrace, 0, chart.blocks);
+        return (this.locateElementHelper<T>(idTrace, 0, chart.blocks) as T);
     }
 
-    private locateElementHelper(idTrace: string[], currentId: number, currentLevelItems: Identifiable[]): Identifiable | undefined
+    private locateElementHelper<T extends Identifiable>(idTrace: string[], currentId: number, currentLevelItems: Identifiable[]): T | undefined
     {
         
         const currentIdentifiable = currentLevelItems.find((identifiable: Identifiable) => identifiable.id === idTrace[currentId]);
@@ -92,7 +91,7 @@ export class ChartService {
         }
         
         if(currentId === idTrace.length - 1){
-            return currentIdentifiable;
+            return (currentIdentifiable as T);
         }
 
         currentLevelItems = currentIdentifiable.children;
