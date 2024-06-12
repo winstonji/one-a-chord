@@ -2,6 +2,7 @@ import { Chart } from "../model/chart";
 import { ChordWrapper } from "../model/chordWrapper";
 import cloneDeep from 'lodash/cloneDeep'
 import { Identifiable } from "../model/interfaces/identifiable";
+import { KeyValue } from "../model/key";
 
 export class ChartService {
 
@@ -11,6 +12,11 @@ export class ChartService {
         this.setChart = setChart;
     }
 
+    /**
+     * Updates the lyric segment within a specified chordWrapper.
+     * @param lyric the new lyric value.
+     * @param chordWrapper the location of the lyric segment to be updated.
+     */
     public updateLyric(lyric: string, chordWrapper: ChordWrapper){
         this.setChart((previousChart: Chart) => {
 
@@ -25,13 +31,31 @@ export class ChartService {
         });
     }
 
+    /**
+     * Updates the chord symbol properties within a specified chordWrapper.
+     * @param root of the chord symbol as a KeyValue.
+     * @param quality of the chord symbol as a string. 
+     * @param extensions of the chord symbol as a string array.
+     * @param slash root of the chord symbol as a KeyValue.
+     * @param chordWrapper the location of the chord symbol to be updated.
+     */
+    public updateChord(chordSymbolString:string, chordWrapper:ChordWrapper){
+        this.setChart((previousChart:Chart) => {
+            //We have to copy the original chord chart because otherwise we cannot modify it as it is a react immutable object
+            //After copying it, we can just lookup and modify the object we want
+            const updatedChart = cloneDeep(previousChart);
+            const chordWrapperToUpdate: ChordWrapper = (this.locateElement(chordWrapper, updatedChart) as ChordWrapper);
+            chordWrapperToUpdate.setChordSymbol(chordSymbolString);
 
+            return updatedChart;
+        })
+    }
 
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.
     //If you call this function with a ChordWrapper, for example, it will give you an array like this [block id, line id, chord wrapper id]
-    private traceIds(identifiable: Identifiable): string[]{
-        return this.traceIdsHelper([], identifiable).reverse();
+    private traceIds(targets: Identifiable): string[]{
+        return this.traceIdsHelper([], targets).reverse();
     }
 
     //Helper method for above method. The recursive base case is when the current identifiable has no parent (meaning it is a block)
@@ -62,7 +86,7 @@ export class ChartService {
         
         const currentIdentifiable = currentLevelItems.find((identifiable: Identifiable) => identifiable.id === idTrace[currentId]);
         if(!currentIdentifiable){
-            console.error(`unable to locate identifiable, no id matches ${idTrace[currentId]} from ${idTrace}`);
+            console.error(`Unable to locate identifiable, no ID matches. ${idTrace[currentId]} from ${idTrace}`);
             return undefined;
         }
         
@@ -72,7 +96,7 @@ export class ChartService {
 
         currentLevelItems = currentIdentifiable.children;
         if(!currentLevelItems){
-            console.error("unable to locate desired identifiable in scanned levels, no more levels to scan")
+            console.error("Unable to locate identifiable in scanned levels, no more levels to scan.")
             return undefined;
         }
 

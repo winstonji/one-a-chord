@@ -7,6 +7,7 @@ export interface KeyValue {
 export class Key {
     // We are using Object.freeze so the values here cannot be changed. Since they are static and shared globally, this prevents you from doing something like:
     // Key.Cs.printName = "you are a loser". 
+    public static readonly none: KeyValue = Object.freeze({ ordinal: -1, printName: "" });
     public static readonly Cs: KeyValue = Object.freeze({ ordinal: 0, printName: "C" });
     public static readonly Db: KeyValue = Object.freeze({ ordinal: 1, printName: "Db" });
     public static readonly Ds: KeyValue = Object.freeze({ ordinal: 2, printName: "D" });
@@ -23,4 +24,17 @@ export class Key {
 
     // Make the constructor private to prevent instantiation
     private constructor() {}
+
+    public static getKeyValueByPrintName(printName: string): KeyValue | undefined {
+        // Iterate over all properties of the Key class
+        for (const key of Object.keys(Key)) {
+            // Check if the property is an instance of KeyValue
+            const keyValue = (Key as any)[key];
+            if (keyValue.printName === printName) {
+                return keyValue;
+            }
+        }
+        // Return undefined if no match is found
+        return undefined;
+    }
 }

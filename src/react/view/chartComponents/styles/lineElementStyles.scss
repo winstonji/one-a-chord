@@ -9,6 +9,10 @@
 .oac-chord-symbol{
     margin: 0em 1em;
     font-weight: bold;
+
+    &:focus{
+        outline: none;
+    }
 }
 
 .oac-lyric-segment{
