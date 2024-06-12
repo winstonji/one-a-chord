@@ -24,7 +24,7 @@ export class ChordWrapper implements Identifiable{
         this.lyricSegment = lyricSegment;
     }
     
-    setChordSymbol = (newChordSymbol:string) => {
+    public setChordSymbol = function(newChordSymbol:string){
         this.backingString = newChordSymbol;
         let newRoot = parseChordSymbol(newChordSymbol, rootsPattern);
 		let newQuality = parseChordSymbol(newChordSymbol, qualitiesPattern);
@@ -47,7 +47,7 @@ export class ChordWrapper implements Identifiable{
 		}
     }
     
-    setLyricSegment = (newLyric:string) => {
+    setLyricSegment = function(newLyric:string) {
         this.lyricSegment = newLyric;
     }
 
