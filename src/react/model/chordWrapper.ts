@@ -16,13 +16,11 @@ export class ChordWrapper implements Identifiable{
     public id: string;
     public parent: Line;
 
-    constructor(parent: Line, id: string, root:KeyValue, quality:string, extensions:string[], slash:KeyValue, lyricSegment:string){
+    constructor(parent: Line, id: string, backingString:string, lyricSegment:string){
         this.id = id;
         this.parent = parent;
-        this.root = root;
-        this.quality = quality;
-        this.extensions = extensions;
-        this.slash = slash;
+        this.backingString = backingString;
+        this.setChordSymbol(backingString);
         this.lyricSegment = lyricSegment;
     }
     
@@ -45,6 +43,7 @@ export class ChordWrapper implements Identifiable{
 			this.quality = newQuality[0];
 			this.extensions = newExtensions;
 			this.slash = Key.getKeyValueByPrintName(newSlash[0]);
+            console.log(this.root, this.quality, this.extensions, this.slash);
 		}
     }
     
