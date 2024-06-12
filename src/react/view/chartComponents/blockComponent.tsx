@@ -6,11 +6,12 @@ import "./styles/blockStyles.scss"
 
 function BlockComponent (block:Block){
 
-	const lines:Line[] = block.lines;
+	const lines:Line[] = block.children;
 
 	return (<div className='oac-block'>
 		<h3 className='oac-block-header'>{block.header}</h3>
-		{lines.map((line:Line) => {
+		{(!lines || lines.length === 0) && <strong>This block has no lines</strong>}
+		{lines && lines.map((line:Line) => {
 			return <LineComponent {...line}/>;
 		})}
 	</div>);

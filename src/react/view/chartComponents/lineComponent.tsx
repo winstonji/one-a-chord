@@ -6,10 +6,11 @@ import "./styles/lineElementStyles.scss"
 
 function LineComponent(line:Line) {
 	
-	const chordWrappers:ChordWrapper[] = line.chordWrappers;
+	const chordWrappers:ChordWrapper[] = line.children;
 
 	return (<div className = "oac-row oac-row-flex-start oac-line oac-row-align-stretch">
-		{chordWrappers.map((chordWrapper:ChordWrapper) => {
+		{(!chordWrappers || chordWrappers.length === 0) && <strong>This lines has no chord data</strong>}
+		{chordWrappers && chordWrappers.map((chordWrapper:ChordWrapper) => {
 			return <ChordWrapperComponent {...chordWrapper}/>
 		})}
 	</div>);
