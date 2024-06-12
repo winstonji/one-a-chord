@@ -44,15 +44,9 @@ export class ChartService {
             // Deep clone the chart
             const updatedChart = cloneDeep(previousChart);
             // Locate and update the chord wrapper
-            const chordWrapperToUpdate = this.locateElement(chordWrapper, updatedChart);
-            
-            if (chordWrapperToUpdate instanceof ChordWrapper) {
-                // Re-bind the setChordSymbol method to the cloned object
-                chordWrapperToUpdate.setChordSymbol = chordWrapperToUpdate.setChordSymbol.bind(chordWrapperToUpdate);
-                // Now call setChordSymbol with the correct 'this' context
-                chordWrapperToUpdate.setChordSymbol(chordSymbolString);
-            }
-    
+            const chordWrapperToUpdate: ChordWrapper = (this.locateElement(chordWrapper, updatedChart) as ChordWrapper);
+
+            chordWrapperToUpdate.setChordSymbol(chordSymbolString);
             return updatedChart;
         })
     }
