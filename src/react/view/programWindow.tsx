@@ -66,14 +66,14 @@ function generateTestChart(): Chart{
     const v2 = new Block("Verse 2", uuidv4());
     const v2l1 = new Line(v2, uuidv4());
     v2l1.children = [
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "Jesus"),
+        new ChordWrapper(v2l1, uuidv4(), "Gsus/B" , "Jesus"),
     ];
     v2.children = [v2l1];
 
     const v3 = new Block("Verse 3", uuidv4());
     const v3l1 = new Line(v3, uuidv4());
     v3l1.children = [
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "Jesus"),
+        new ChordWrapper(v3l1, uuidv4(), "Gsus/B" , "Jesus")
     ]
     v3.children = [v3l1]
 

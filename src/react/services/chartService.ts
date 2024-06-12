@@ -41,15 +41,22 @@ export class ChartService {
      */
     public updateChord(chordSymbolString:string, chordWrapper:ChordWrapper){
         this.setChart((previousChart:Chart) => {
-            //We have to copy the original chord chart because otherwise we cannot modify it as it is a react immutable object
-            //After copying it, we can just lookup and modify the object we want
+            // Deep clone the chart
             const updatedChart = cloneDeep(previousChart);
-            const chordWrapperToUpdate: ChordWrapper = (this.locateElement(chordWrapper, updatedChart) as ChordWrapper);
-            chordWrapperToUpdate.setChordSymbol(chordSymbolString);
-
+            // Locate and update the chord wrapper
+            const chordWrapperToUpdate = this.locateElement(chordWrapper, updatedChart);
+            
+            if (chordWrapperToUpdate instanceof ChordWrapper) {
+                // Re-bind the setChordSymbol method to the cloned object
+                chordWrapperToUpdate.setChordSymbol = chordWrapperToUpdate.setChordSymbol.bind(chordWrapperToUpdate);
+                // Now call setChordSymbol with the correct 'this' context
+                chordWrapperToUpdate.setChordSymbol(chordSymbolString);
+            }
+    
             return updatedChart;
         })
     }
+    
 
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.

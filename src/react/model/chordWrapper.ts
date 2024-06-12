@@ -7,7 +7,7 @@ import { hasDuplicates, parseChordSymbol } from "../utils/chordSymbolUtils";
 
 export class ChordWrapper implements Identifiable{
 
-    public backingString:string;
+    public backingString:string = "";
     public root?:KeyValue;
     public quality?:string;
     public extensions?:string[];
@@ -19,7 +19,6 @@ export class ChordWrapper implements Identifiable{
     constructor(parent: Line, id: string, backingString:string, lyricSegment:string){
         this.id = id;
         this.parent = parent;
-        this.backingString = backingString;
         this.setChordSymbol(backingString);
         this.lyricSegment = lyricSegment;
     }
