@@ -15,9 +15,15 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
 
             if(focusRef.current.id === chordWrapper.id){
                 editableRef.current.focus();
+                const range = document.createRange();
+                const selection = window.getSelection();
+                range.setStart(editableRef.current.childNodes[0], focusRef.current.position);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
             }
         }
-    }, [chordWrapper.lyricSegment]);
+    });
 
     const updateLyric = (updatedLyric: string) => {
         chartService.updateLyric(chordWrapper, updatedLyric);
@@ -31,26 +37,29 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
         const textAfterCursor = editableRef.current.textContent.slice(cursorPosition);
         const textBeforeCursor = editableRef.current.textContent.slice(0, cursorPosition);
         const contentLength = editableRef.current.textContent.length;
-    
+        
+        
         if (event.key === ' ' && editableRef.current) {
             const newChordWrapperId = chartService.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
             chartService.updateLyric(chordWrapper, textBeforeCursor);
-
+            
             focusRef.current = {id: newChordWrapperId, position: 0}
-
+            
             // Prevent the space from being added
             event.preventDefault();
         } else if (event.key === 'Backspace') {
             const selection = window.getSelection();
+            focusRef.current = {id: chordWrapper.id, position: cursorPosition - 1};
             // Check if the cursor is at the start
             if (selection.anchorOffset === 0) {
                 chartService.mergeChordWrapper(chordWrapper, -1);
-                    
-
+                
+                
                 event.preventDefault(); // Prevent the default backspace behavior
             }
         } else if (event.key === 'Delete') {
             const selection = window.getSelection();
+            focusRef.current = {id: chordWrapper.id, position: cursorPosition};
             // Check if the cursor is at the end
             if (selection.anchorOffset === contentLength) {
                 chartService.mergeChordWrapper(chordWrapper, 1);
