@@ -11,7 +11,7 @@ function LineComponent(line:Line) {
 	return (<div className = "oac-row oac-row-flex-start oac-line oac-row-align-stretch">
 		{(!chordWrappers || chordWrappers.length === 0) && <strong>This lines has no chord data</strong>}
 		{chordWrappers && chordWrappers.map((chordWrapper:ChordWrapper) => {
-			return <ChordWrapperComponent {...chordWrapper}/>
+			return <ChordWrapperComponent key = {chordWrapper.id} {...chordWrapper}/>
 		})}
 	</div>);
 }

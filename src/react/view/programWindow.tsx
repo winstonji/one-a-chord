@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext } from 'react'
+import React, { useEffect, useState, createContext, useRef } from 'react'
 import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
@@ -10,25 +10,51 @@ import { v4 as uuidv4 } from 'uuid';
 import { Line } from '../model/line';
 import { Block } from '../model/block';
 
-export const ChartContext = createContext(null); 
+export interface FocusRef{
+    id: string;
+    position: number;
+}
+
+export interface ChartContextType {
+    chart: Chart;
+    chartService: ChartService;
+    focusRef: React.MutableRefObject<FocusRef>
+}
+
+export const ChartContext = createContext<ChartContextType>(null); 
 
 const ProgramWindow = () => {
 
-    const [chart, setChart] = useState(generateTestChart);
+    const [chart, setChart] = useState<Chart | undefined>();
     const chartService = new ChartService(setChart);
+    const focusRef = useRef<FocusRef>();
+
+    useEffect(() => {
+        const initialChart = generateTestChart();
+        focusRef.current = {
+            id: initialChart.blocks[0].children[0].children[0].id,
+            position: 0
+        };
+        console.log(`Initial focus ${focusRef.current.id}`)
+        setChart(initialChart);
+    }, [])
+    
 
     const id = uuidv4();
 
-	return (<ChartContext.Provider value={{chart, chartService}}>
-        {
-          <>
-            <Toolbar/>
-            <Canvas/>
-          </>   
+	return (
+        <>
+        {chart && 
+            <ChartContext.Provider value={{chart, chartService, focusRef}}>
+                {<>
+                    <Toolbar/>
+                    <Canvas/>
+                </>}
+                {/* You can remove this line if you don't need to debug if the chart state is updating */}
+                <pre>{stringifyWithCircularForHTML(chart)}</pre>
+            </ChartContext.Provider>
         }
-            {/* You can remove this line if you don't need to debug if the chart state is updating */}
-            <pre>{stringifyWithCircularForHTML(chart)}</pre>
-        </ChartContext.Provider>
+        </>
     );
 }
 

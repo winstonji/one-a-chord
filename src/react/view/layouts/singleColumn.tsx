@@ -15,7 +15,7 @@ function SingleColumn(){
         <ChartMetaDataComponent {...metadata}/>
         {!blocks && <strong>No blocks</strong>}
         {blocks && blocks.length > 0 && blocks.map((block: Block) => {
-            return <BlockComponent {...block}/>
+            return <BlockComponent key = {block.id} {...block}/>
         })}
     </>);
 }
