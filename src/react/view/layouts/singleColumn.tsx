@@ -7,6 +7,7 @@ import BlockComponent from '../chartComponents/blockComponent';
 
 function SingleColumn(){
 
+    console.log('rerender layout')
     const {chart} = useContext(ChartContext);
     const metadata: ChartMetaData = chart.metaData;
     const blocks: Block[] = chart.blocks;

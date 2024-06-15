@@ -18,7 +18,8 @@ export interface FocusRef{
 export interface ChartContextType {
     chart: Chart;
     chartService: ChartService;
-    focusRef: React.MutableRefObject<FocusRef>
+    currentFocus: FocusRef;
+    setCurrentFocus: React.Dispatch<React.SetStateAction<FocusRef>>
 }
 
 export const ChartContext = createContext<ChartContextType>(null); 
@@ -27,15 +28,15 @@ const ProgramWindow = () => {
 
     const [chart, setChart] = useState<Chart | undefined>();
     const chartService = new ChartService(setChart);
-    const focusRef = useRef<FocusRef>();
+    const [currentFocus, setCurrentFocus] = useState<FocusRef>();
 
     useEffect(() => {
         const initialChart = generateTestChart();
-        focusRef.current = {
+         setCurrentFocus({
             id: initialChart.blocks[0].children[0].children[0].id,
             position: 0
-        };
-        console.log(`Initial focus ${focusRef.current.id}`)
+        });
+        // console.log(`Initial focus ${focusRef.current.id}`)
         setChart(initialChart);
     }, [])
     
@@ -45,7 +46,7 @@ const ProgramWindow = () => {
 	return (
         <>
         {chart && 
-            <ChartContext.Provider value={{chart, chartService, focusRef}}>
+            <ChartContext.Provider value={{chart, chartService, currentFocus, setCurrentFocus}}>
                 {<>
                     <Toolbar/>
                     <Canvas/>

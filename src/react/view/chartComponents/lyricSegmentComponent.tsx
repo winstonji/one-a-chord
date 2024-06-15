@@ -5,7 +5,7 @@ import { ChartService } from '../../services/chartService';
 
 function LyricSegmentComponent(chordWrapper: ChordWrapper) {
     
-    const { chartService, focusRef }= useContext(ChartContext);
+    const { chartService, currentFocus, setCurrentFocus }= useContext(ChartContext);
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
     useEffect(() => {
@@ -13,11 +13,11 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
         if (editableRef.current) {
             editableRef.current.textContent = chordWrapper.lyricSegment;
 
-            if(focusRef.current.id === chordWrapper.id){
+            if(currentFocus.id === chordWrapper.id){
                 editableRef.current.focus();
             }
         }
-    });
+    })
 
     const updateLyric = (updatedLyric: string) => {
         chartService.updateLyric(chordWrapper, updatedLyric);
@@ -37,13 +37,13 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             const newChordWrapperId = chartService.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
             chartService.updateLyric(chordWrapper, textBeforeCursor);
             
-            focusRef.current = {id: newChordWrapperId, position: 0}
+            setCurrentFocus({id: newChordWrapperId, position: 0});
             
             // Prevent the space from being added
             event.preventDefault();
         } else if (event.key === 'Backspace') {
             const selection = window.getSelection();
-            focusRef.current = {id: chordWrapper.id, position: cursorPosition - 1};
+            setCurrentFocus({id: chordWrapper.id, position: cursorPosition - 1});
             // Check if the cursor is at the start
             if (selection.anchorOffset === 0) {
                 chartService.mergeChordWrapper(chordWrapper, -1);
@@ -51,26 +51,36 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             }
         } else if (event.key === 'Delete') {
             const selection = window.getSelection();
-            focusRef.current = {id: chordWrapper.id, position: cursorPosition};
+            setCurrentFocus({id: chordWrapper.id, position: cursorPosition});
             // Check if the cursor is at the end
             if (selection.anchorOffset === contentLength) {
                 chartService.mergeChordWrapper(chordWrapper, 1);
                 event.preventDefault(); // Prevent the default delete behavior
             }
         } else if ((event.key === 'ArrowRight' && event.ctrlKey)
-                || (event.key === 'ArrowRight' && focusRef.current.position === contentLength)) {
-            console.log("event reached");
-            const nextChordWrapper = chartService.getNextChordWrapper(chordWrapper);
+                || (event.key === 'ArrowRight' && cursorPosition === contentLength)) {
+            // console.log("event reached");
+            const nextChordWrapper = chordWrapper.getNeighbor(1);
             if (nextChordWrapper) {
-                focusRef.current = {id: nextChordWrapper.id, position: 0};
+                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+                event.preventDefault();
+                // console.log(`event executed: ${focusRef.current.id}`);
             }
-            event.preventDefault(); // Consider moving this inside the if block if needed
+        } else if ((event.key === 'ArrowLeft' && event.ctrlKey)
+                || (event.key === 'ArrowLeft' && cursorPosition === 0)) {
+            // console.log("event reached");
+            const nextChordWrapper = chordWrapper.getNeighbor(-1);
+            if (nextChordWrapper) {
+                setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.length});
+                event.preventDefault();
+                // console.log(`event executed: ${focusRef.current.id}`);
+            } 
         }
     };
     
     const handleFocus = (event) => {
-        console.log(`current chord wrapper: ${chordWrapper.id}, useRef focus: ${JSON.stringify(focusRef)}`);
-        focusRef.current = {id: chordWrapper.id, position: 0};
+        setCurrentFocus({id: chordWrapper.id, position: 0});
+        // console.log(`current chord wrapper: ${chordWrapper.id}, useRef focus: ${JSON.stringify(currentFocus)}`);
     }
       
     return (

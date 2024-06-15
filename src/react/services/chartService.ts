@@ -123,16 +123,6 @@ export class ChartService {
         })
     }
     
-    public getNextChordWrapper(currentElement:ChordWrapper): ChordWrapper{
-        const line:Line = currentElement.parent;
-        const currentIndex:number = line.children.findIndex(cw => cw.id === currentElement.id)
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < line.children.length) {
-            return line.children[nextIndex];
-        }
-        return null;
-    }
-
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.
     //If you call this function with a ChordWrapper, for example, it will give you an array like this [block id, line id, chord wrapper id]
