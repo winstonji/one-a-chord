@@ -15,12 +15,6 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
 
             if(focusRef.current.id === chordWrapper.id){
                 editableRef.current.focus();
-                const range = document.createRange();
-                const selection = window.getSelection();
-                range.setStart(editableRef.current.childNodes[0], focusRef.current.position);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
             }
         }
     });
@@ -53,8 +47,6 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             // Check if the cursor is at the start
             if (selection.anchorOffset === 0) {
                 chartService.mergeChordWrapper(chordWrapper, -1);
-                
-                
                 event.preventDefault(); // Prevent the default backspace behavior
             }
         } else if (event.key === 'Delete') {
@@ -64,11 +56,16 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             if (selection.anchorOffset === contentLength) {
                 chartService.mergeChordWrapper(chordWrapper, 1);
                 event.preventDefault(); // Prevent the default delete behavior
-                const newRange = document.createRange();
-                newRange.setStart(editableRef.current, cursorPosition);
-                newRange.collapse(true);
             }
-        } 
+        } else if ((event.key === 'ArrowRight' && event.ctrlKey)
+                || (event.key === 'ArrowRight' && focusRef.current.position === contentLength)) {
+            console.log("event reached");
+            const nextChordWrapper = chartService.getNextChordWrapper(chordWrapper);
+            if (nextChordWrapper) {
+                focusRef.current = {id: nextChordWrapper.id, position: 0};
+            }
+            event.preventDefault(); // Consider moving this inside the if block if needed
+        }
     };
     
     const handleFocus = (event) => {
