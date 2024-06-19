@@ -43,14 +43,8 @@ export class ChartService {
         return newChordWrapperId;
     }
     
-    public mergeChordWrapper(targetElement: ChordWrapper, direction: number){
-        let normalizedDirection:number;
-        if (direction === 0) {
-            return;
-        } else {
-            normalizedDirection = direction < 0 ? -1 : 1;
-        }
-    
+    public mergeChordWrapper(targetElement: ChordWrapper, direction: -1 | 1){
+        let normalizedDirection:number = direction;
         this.setChart((previousChart: Chart) => {
             const updatedChart = cloneDeep(previousChart);
             const line: Line = this.locateElement<Line>(targetElement.parent, updatedChart);

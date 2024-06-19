@@ -1,7 +1,7 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { ChordWrapper } from '../../model/chordWrapper';
 import { ChartContext } from '../programWindow';
-import { ChartService } from '../../services/chartService';
+import { getCursorPos } from '../../utils/selectionUtil';
 
 function LyricSegmentComponent(chordWrapper: ChordWrapper) {
     
@@ -15,19 +15,26 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
 
             if(currentFocus.id === chordWrapper.id){
                 editableRef.current.focus();
+                
+                const textNode = editableRef.current.childNodes[0];
+                const selection: Selection = window.getSelection();
+                const updatedPosition: Range = document.createRange();
+                updatedPosition.setStart(textNode, currentFocus.position);
+                updatedPosition.setEnd(textNode, currentFocus.position);
+                selection.removeAllRanges();
+                selection.addRange(updatedPosition);
             }
         }
-    })
+    });
 
     const updateLyric = (updatedLyric: string) => {
         chartService.updateLyric(chordWrapper, updatedLyric);
+        setCurrentFocus({position: getCursorPos()})
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const cursorPosition = range.startOffset;
+        const cursorPosition = getCursorPos();
+
         const textAfterCursor = editableRef.current.textContent.slice(cursorPosition);
         const textBeforeCursor = editableRef.current.textContent.slice(0, cursorPosition);
         const contentLength = editableRef.current.textContent.length;
@@ -43,33 +50,33 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             event.preventDefault();
         } else if (event.key === 'Backspace') {
             const selection = window.getSelection();
-            setCurrentFocus({id: chordWrapper.id, position: cursorPosition - 1});
+            setCurrentFocus({position: cursorPosition - 1});
             // Check if the cursor is at the start
             if (selection.anchorOffset === 0) {
+                const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.length;
                 chartService.mergeChordWrapper(chordWrapper, -1);
+                setCurrentFocus({position: cursorPositionAfterMerge})
                 event.preventDefault(); // Prevent the default backspace behavior
             }
         } else if (event.key === 'Delete') {
             const selection = window.getSelection();
-            setCurrentFocus({id: chordWrapper.id, position: cursorPosition});
+            setCurrentFocus({position: cursorPosition});
             // Check if the cursor is at the end
             if (selection.anchorOffset === contentLength) {
                 chartService.mergeChordWrapper(chordWrapper, 1);
                 event.preventDefault(); // Prevent the default delete behavior
             }
-        } else if ((event.key === 'ArrowRight' && event.ctrlKey)
-                || (event.key === 'ArrowRight' && cursorPosition === contentLength)) {
+        } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             // console.log("event reached");
-            const nextChordWrapper = chordWrapper.getNeighbor(1);
+            const nextChordWrapper = chordWrapper.getNext();
             if (nextChordWrapper) {
                 setCurrentFocus({id: nextChordWrapper.id, position: 0});
                 event.preventDefault();
                 // console.log(`event executed: ${focusRef.current.id}`);
             }
-        } else if ((event.key === 'ArrowLeft' && event.ctrlKey)
-                || (event.key === 'ArrowLeft' && cursorPosition === 0)) {
+        } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
             // console.log("event reached");
-            const nextChordWrapper = chordWrapper.getNeighbor(-1);
+            const nextChordWrapper = chordWrapper.getPrevious();
             if (nextChordWrapper) {
                 setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.length});
                 event.preventDefault();
@@ -78,9 +85,11 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
         }
     };
     
-    const handleFocus = (event) => {
-        setCurrentFocus({id: chordWrapper.id, position: 0});
-        // console.log(`current chord wrapper: ${chordWrapper.id}, useRef focus: ${JSON.stringify(currentFocus)}`);
+
+    //This keeps the current focus in sync with the cursor in the DOM when you click an element.
+    //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
+    const handleFocusViaClick = () => {
+        setCurrentFocus({id: chordWrapper.id, position: getCursorPos()});
     }
       
     return (
@@ -88,7 +97,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             ref={editableRef}
             className="oac-lyric-segment"
             contentEditable
-            onFocus = {handleFocus}
+            onClick={handleFocusViaClick}
             onKeyDown={handleKeyDown}
             onInput={(event) => updateLyric(event.currentTarget.textContent || '')}
         >
