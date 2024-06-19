@@ -14,8 +14,6 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             editableRef.current.textContent = chordWrapper.lyricSegment;
 
             if(currentFocus.id === chordWrapper.id){
-                console.log(JSON.stringify(currentFocus));
-
                 editableRef.current.focus();
                 
                 const textNode = editableRef.current.childNodes[0];
