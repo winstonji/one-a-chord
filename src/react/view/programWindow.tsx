@@ -15,11 +15,13 @@ export interface FocusRef{
     position: number;
 }
 
+export type UpdateFocusRefVal = Partial<FocusRef>;
+
 export interface ChartContextType {
     chart: Chart;
     chartService: ChartService;
     currentFocus: FocusRef;
-    setCurrentFocus: React.Dispatch<React.SetStateAction<FocusRef>>
+    setCurrentFocus: (val: UpdateFocusRefVal) => void
 }
 
 export const ChartContext = createContext<ChartContextType>(null); 
@@ -32,21 +34,31 @@ const ProgramWindow = () => {
 
     useEffect(() => {
         const initialChart = generateTestChart();
+
+        //default to first chord wrapper in the chart.
          setCurrentFocus({
             id: initialChart.blocks[0].children[0].children[0].id,
             position: 0
         });
-        // console.log(`Initial focus ${focusRef.current.id}`)
         setChart(initialChart);
     }, [])
     
+
+    function currentFocusHelper(val: UpdateFocusRefVal){
+        setCurrentFocus((currentFocus) => {
+            return {
+                id: val.id?? currentFocus.id,
+                position: val.position?? currentFocus.position
+            }
+        })
+    }
 
     const id = uuidv4();
 
 	return (
         <>
         {chart && 
-            <ChartContext.Provider value={{chart, chartService, currentFocus, setCurrentFocus}}>
+            <ChartContext.Provider value={{chart, chartService, currentFocus, setCurrentFocus: currentFocusHelper}}>
                 {<>
                     <Toolbar/>
                     <Canvas/>
