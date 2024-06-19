@@ -102,17 +102,17 @@ function generateTestChart(): Chart{
     ];
     const v1l2 = new Line(v1, uuidv4());
     v1l2.children = [
-        new ChordWrapper(v1l1, uuidv4(), "G#7" , "Superlonglyricsegment"),
-        new ChordWrapper(v1l1, uuidv4(), "Gbmaj7/D" , "a"),
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "hecking"),
-        new ChordWrapper(v1l1, uuidv4(), "Gsus" , "fishy")
+        new ChordWrapper(v1l2, uuidv4(), "G#7" , "Superlonglyricsegment"),
+        new ChordWrapper(v1l2, uuidv4(), "Gbmaj7/D" , "a"),
+        new ChordWrapper(v1l2, uuidv4(), "Gsus/B" , "hecking"),
+        new ChordWrapper(v1l2, uuidv4(), "Gsus" , "fishy")
     ]
     const v1l3 = new Line(v1, uuidv4());
     v1l3.children = [
-        new ChordWrapper(v1l1, uuidv4(), "/D" , "Just"),
-        new ChordWrapper(v1l1, uuidv4(), "D#/B" , "a"),
-        new ChordWrapper(v1l1, uuidv4(), "B aug 13" , "third"),
-        new ChordWrapper(v1l1, uuidv4(), "G13b5/G#" , "line")
+        new ChordWrapper(v1l3, uuidv4(), "/D" , "Just"),
+        new ChordWrapper(v1l3, uuidv4(), "D#/B" , "a"),
+        new ChordWrapper(v1l3, uuidv4(), "B aug 13" , "third"),
+        new ChordWrapper(v1l3, uuidv4(), "G13b5/G#" , "line")
     ]
     v1.children = [v1l1, v1l2, v1l3];
 
