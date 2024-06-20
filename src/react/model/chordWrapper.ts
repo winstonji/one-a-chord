@@ -42,7 +42,6 @@ export class ChordWrapper implements Identifiable{
 			this.quality = newQuality[0];
 			this.extensions = newExtensions;
 			this.slash = Key.getKeyValueByPrintName(newSlash[0]);
-            console.log(this.root, this.quality, this.extensions, this.slash);
 		}
     }
     

@@ -2,11 +2,12 @@ import {expect, jest, test} from '@jest/globals';
 import { ChartService } from '../../services/chartService';
 import { Chart } from '../../model/chart';
 import { fakeChart } from '../testUtils/chartFaker';
+import { ChordWrapper } from '../../model/chordWrapper';
 
 describe("chartService::updateChord tests", () => {
 
     let chartService: ChartService;
-    let chart;
+    let chart: Chart;
 
     beforeAll(() => {
         const setChartMock = jest.fn();
@@ -26,6 +27,9 @@ describe("chartService::updateChord tests", () => {
     });
 
     test("update a chord wrapper", () => {
-        chartService.updateChord()
-    })
+        const chordWrapperToUpdate:ChordWrapper = chart.blocks[0].children[0].children[0];
+        chartService.updateChord("A", chordWrapperToUpdate);
+        const updatedChordWrapper:ChordWrapper = chart.blocks[0].children[0].children[0];
+        expect(updatedChordWrapper.backingString).toEqual("A");
+    });
 });
