@@ -7,6 +7,7 @@ import BlockComponent from '../chartComponents/blockComponent';
 
 function SingleColumn(){
 
+    console.log('rerender layout')
     const {chart} = useContext(ChartContext);
     const metadata: ChartMetaData = chart.metaData;
     const blocks: Block[] = chart.blocks;
@@ -15,7 +16,7 @@ function SingleColumn(){
         <ChartMetaDataComponent {...metadata}/>
         {!blocks && <strong>No blocks</strong>}
         {blocks && blocks.length > 0 && blocks.map((block: Block) => {
-            return <BlockComponent {...block}/>
+            return <BlockComponent key = {block.id} {...block}/>
         })}
     </>);
 }

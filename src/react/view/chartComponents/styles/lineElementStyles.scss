@@ -4,6 +4,9 @@
 
 .oac-chord-wrapper{
     margin: 0em;
+    &:focus{
+        border: 1px solid lightgray;
+    }
 }
 
 .oac-chord-symbol{

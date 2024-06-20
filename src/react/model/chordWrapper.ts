@@ -50,4 +50,22 @@ export class ChordWrapper implements Identifiable{
         this.lyricSegment = newLyric;
     }
 
+    getNext = function(): ChordWrapper{
+        return this.getNeighbor(1);
+    }
+
+    getPrevious = function(): ChordWrapper{
+        return this.getNeighbor(-1);
+    }
+
+    getNeighbor = function(direction: 1 | -1): ChordWrapper{
+
+        const line:Line = this.parent;
+        const currentIndex:number = line.children.findIndex(cw => cw.id === this.id)
+        const neighborIndex = currentIndex + direction;
+        if (neighborIndex < line.children.length) {
+            return line.children[neighborIndex];
+        }
+        return null;
+    }
 }
