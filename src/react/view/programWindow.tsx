@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext } from 'react'
+import React, { useEffect, useState, createContext, useRef } from 'react'
 import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
@@ -10,25 +10,64 @@ import { v4 as uuidv4 } from 'uuid';
 import { Line } from '../model/line';
 import { Block } from '../model/block';
 
-export const ChartContext = createContext(null); 
+export interface FocusRef{
+    id: string;
+    position: number;
+}
+
+export type UpdateFocusRefVal = Partial<FocusRef>;
+
+export interface ChartContextType {
+    chart: Chart;
+    chartService: ChartService;
+    currentFocus: FocusRef;
+    setCurrentFocus: (val: UpdateFocusRefVal) => void
+}
+
+export const ChartContext = createContext<ChartContextType>(null); 
 
 const ProgramWindow = () => {
 
-    const [chart, setChart] = useState(generateTestChart);
+    const [chart, setChart] = useState<Chart | undefined>();
     const chartService = new ChartService(setChart);
+    const [currentFocus, setCurrentFocus] = useState<FocusRef>();
+
+    useEffect(() => {
+        const initialChart = generateTestChart();
+
+        //default to first chord wrapper in the chart.
+         setCurrentFocus({
+            id: initialChart.blocks[0].children[0].children[0].id,
+            position: 0
+        });
+        setChart(initialChart);
+    }, [])
+    
+
+    function currentFocusHelper(val: UpdateFocusRefVal){
+        setCurrentFocus((currentFocus) => {
+            return {
+                id: val.id?? currentFocus.id,
+                position: val.position?? currentFocus.position
+            }
+        })
+    }
 
     const id = uuidv4();
 
-	return (<ChartContext.Provider value={{chart, chartService}}>
-        {
-          <>
-            <Toolbar/>
-            <Canvas/>
-          </>   
+	return (
+        <>
+        {chart && 
+            <ChartContext.Provider value={{chart, chartService, currentFocus, setCurrentFocus: currentFocusHelper}}>
+                {<>
+                    <Toolbar/>
+                    <Canvas/>
+                </>}
+                {/* You can remove this line if you don't need to debug if the chart state is updating */}
+                <pre>{stringifyWithCircularForHTML(chart)}</pre>
+            </ChartContext.Provider>
         }
-            {/* You can remove this line if you don't need to debug if the chart state is updating */}
-            <pre>{stringifyWithCircularForHTML(chart)}</pre>
-        </ChartContext.Provider>
+        </>
     );
 }
 
@@ -57,11 +96,25 @@ function generateTestChart(): Chart{
     const v1 = new Block("Verse 1", uuidv4());
     const v1l1 = new Line(v1, uuidv4());
     v1l1.children = [
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "Jesus"),
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "Jesus"),
-        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "Jesus"),
+        new ChordWrapper(v1l1, uuidv4(), "Gsus/B" , "What"),
+        new ChordWrapper(v1l1, uuidv4(), "D" , "a"),
+        new ChordWrapper(v1l1, uuidv4(), "Bmin" , "lyric"),
     ];
-    v1.children = [v1l1];
+    const v1l2 = new Line(v1, uuidv4());
+    v1l2.children = [
+        new ChordWrapper(v1l2, uuidv4(), "G#7" , "Superlonglyricsegment"),
+        new ChordWrapper(v1l2, uuidv4(), "Gbmaj7/D" , "a"),
+        new ChordWrapper(v1l2, uuidv4(), "Gsus/B" , "hecking"),
+        new ChordWrapper(v1l2, uuidv4(), "Gsus" , "fishy")
+    ]
+    const v1l3 = new Line(v1, uuidv4());
+    v1l3.children = [
+        new ChordWrapper(v1l3, uuidv4(), "/D" , "Just"),
+        new ChordWrapper(v1l3, uuidv4(), "D#/B" , "a"),
+        new ChordWrapper(v1l3, uuidv4(), "B aug 13" , "third"),
+        new ChordWrapper(v1l3, uuidv4(), "G13b5/G#" , "line")
+    ]
+    v1.children = [v1l1, v1l2, v1l3];
 
     const v2 = new Block("Verse 2", uuidv4());
     const v2l1 = new Line(v2, uuidv4());

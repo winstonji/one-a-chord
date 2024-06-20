@@ -12,7 +12,7 @@ function BlockComponent (block:Block){
 		<h3 className='oac-block-header'>{block.header}</h3>
 		{(!lines || lines.length === 0) && <strong>This block has no lines</strong>}
 		{lines && lines.map((line:Line) => {
-			return <LineComponent {...line}/>;
+			return <LineComponent key = {line.id} {...line}/>;
 		})}
 	</div>);
 }

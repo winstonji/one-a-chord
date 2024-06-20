@@ -21,7 +21,7 @@ function ChordSymbolComponent(chordWrapper: ChordWrapper) {
         const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
         const startOffset = range ? range.startOffset : 0;
 
-        chartService.updateChord(updatedSymbol, chordWrapper);
+        chartService.updateChord(chordWrapper, updatedSymbol);
 
         // Restore the cursor position after the state update
         if (editableRef.current && range) {
