@@ -19,13 +19,16 @@ export class ChordWrapper implements Identifiable{
     constructor(parent: Line, id: string, backingString:string, lyricSegment:string){
         this.id = id;
         this.parent = parent;
-        this.setChordSymbol(backingString);
+        this.setChordSymbol(backingString, true);
         this.lyricSegment = lyricSegment;
     }
     
-    public setChordSymbol = function(newChordSymbol:string){
+    public setChordSymbol = function(newChordSymbol:string, fromConstructor?: boolean){
         this.backingString = newChordSymbol;
         let newRoot = parseChordSymbol(newChordSymbol, rootsPattern);
+        if(!fromConstructor){
+            console.log(newRoot);
+        }
 		let newQuality = parseChordSymbol(newChordSymbol, qualitiesPattern);
 		let newExtensions = parseChordSymbol(newChordSymbol, extensionsPattern);
 		let newSlash = parseChordSymbol(newChordSymbol, slashesPattern);
@@ -42,7 +45,6 @@ export class ChordWrapper implements Identifiable{
 			this.quality = newQuality[0];
 			this.extensions = newExtensions;
 			this.slash = Key.getKeyValueByPrintName(newSlash[0]);
-            console.log(this.root, this.quality, this.extensions, this.slash);
 		}
     }
     
@@ -59,7 +61,6 @@ export class ChordWrapper implements Identifiable{
     }
 
     getNeighbor = function(direction: 1 | -1): ChordWrapper{
-
         const line:Line = this.parent;
         const currentIndex:number = line.children.findIndex(cw => cw.id === this.id)
         const neighborIndex = currentIndex + direction;
