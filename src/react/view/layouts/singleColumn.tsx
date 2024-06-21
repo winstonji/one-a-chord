@@ -10,7 +10,7 @@ function SingleColumn(){
     console.log('rerender layout')
     const {chart} = useContext(ChartContext);
     const metadata: ChartMetaData = chart.metaData;
-    const blocks: Block[] = chart.blocks;
+    const blocks: Block[] = chart.children;
 
 	return (<>
         <ChartMetaDataComponent {...metadata}/>

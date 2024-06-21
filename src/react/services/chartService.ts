@@ -143,7 +143,7 @@ export class ChartService {
     private locateElement<T extends Identifiable>(target: Identifiable, chart: Chart): T | undefined
     {
         const idTrace: string[] = this.traceIds(target);
-        return (this.locateElementHelper<T>(idTrace, 0, chart.blocks) as T);
+        return (this.locateElementHelper<T>(idTrace, 0, chart.children) as T);
     }
 
     private locateElementHelper<T extends Identifiable>(idTrace: string[], currentId: number, currentLevelItems: Identifiable[]): T | undefined

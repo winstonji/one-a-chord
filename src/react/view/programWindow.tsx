@@ -38,7 +38,7 @@ const ProgramWindow = () => {
 
         //default to first chord wrapper in the chart.
          setCurrentFocus({
-            id: initialChart.blocks[0].children[0].children[0].id,
+            id: initialChart.children[0].children[0].children[0].id,
             position: 0
         });
         setChart(initialChart);

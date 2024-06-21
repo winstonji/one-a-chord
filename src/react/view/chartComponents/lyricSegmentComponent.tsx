@@ -90,6 +90,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
         setCurrentFocus({id: chordWrapper.id, position: getCursorPos()});
+        console.log(chordWrapper.parent.id);
     }
       
     return (

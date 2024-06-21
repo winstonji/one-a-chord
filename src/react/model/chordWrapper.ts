@@ -4,6 +4,7 @@ import { Identifiable } from "./interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 import { extensionsPattern, qualitiesPattern, rootsPattern, slashesPattern } from "./constants/chordSymbolConstants";
 import { hasDuplicates, parseChordSymbol } from "../utils/chordSymbolUtils";
+import { last } from "rxjs";
 
 export class ChordWrapper implements Identifiable{
 
@@ -64,8 +65,15 @@ export class ChordWrapper implements Identifiable{
         const line:Line = this.parent;
         const currentIndex:number = line.children.findIndex(cw => cw.id === this.id)
         const neighborIndex = currentIndex + direction;
-        if (neighborIndex < line.children.length) {
+        if (neighborIndex < line.children.length && neighborIndex >= 0) {
             return line.children[neighborIndex];
+        }
+        else if (neighborIndex < 0) {
+            const previousLine = line.getPrevious();
+            return previousLine ? previousLine.children[previousLine.children.length - 1] : null;
+        } else if (neighborIndex >= line.children.length) {
+            const nextLine = line.getNext();
+            return nextLine ? nextLine.children[0] : null;
         }
         return null;
     }
