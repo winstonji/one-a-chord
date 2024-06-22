@@ -8,7 +8,7 @@ export class Block implements Identifiable{
     
     public header:string;
     public id: string;
-    public parent:Chart;
+    public parent?:Chart;
     public children?:Line[];
     
     constructor(parent: Chart, header:string, id: string){

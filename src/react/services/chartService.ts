@@ -5,6 +5,7 @@ import { Identifiable } from "../model/interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 import { KeyValue } from "../model/key";
 import { Line } from "../model/line";
+import { Block } from "../model/block";
 
 export class ChartService {
 
@@ -35,6 +36,42 @@ export class ChartService {
                 line.children.splice(index + 1, 0, newChordWrapper);
             } else {
                 console.error('The previous element is not found within any Line.');
+            }
+    
+            return updatedChart;
+        });
+
+        return newChordWrapperId;
+    }
+
+    public insertNewLine(previousElement: Line, chordWrapper:ChordWrapper, textAfterCursor:string): string {
+        let newChordWrapperId;
+
+        this.setChart((previousChart: Chart) => {
+            // Copy the original chord chart to be able to modify it
+            const updatedChart = cloneDeep(previousChart);
+            
+            // Retrieve the block that contains the previous line.
+            const block:Block = this.locateElement<Block>((previousElement.parent as Block), updatedChart);
+            console.log(block);
+
+            if (block) {
+                // Find the index of the previousElement in the children array
+                const index = block.children.findIndex((element) => element.id === previousElement.id);
+    
+                // Split the chordWrapper
+                newChordWrapperId = this.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
+
+                // Create a new Line instance and initialize children
+                const newLine = new Line(block, uuidv4());
+                const newChildren = [...previousElement.children.slice(index + 1)];
+                newLine.children = newChildren;
+                previousElement.children.slice(0, index + 1);
+    
+                // Insert the new Line right after the previousElement
+                block.children.splice(index + 1, 0, newLine);
+            } else {
+                console.error('The previous element is not found within any Block.');
             }
     
             return updatedChart;
@@ -90,7 +127,6 @@ export class ChartService {
             //After copying it, we can just lookup and modify the object we want
             const updatedChart = cloneDeep(previousChart);
             const chordWrapperToUpdate: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, updatedChart);
-
             chordWrapperToUpdate.setLyricSegment(lyric);
 
             return updatedChart;

@@ -48,6 +48,14 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             
             // Prevent the space from being added
             event.preventDefault();
+        } else if (event.key === 'Enter' && editableRef.current) {
+            const newChordWrapperId = chartService.insertNewLine(chordWrapper.parent, chordWrapper, textAfterCursor);
+            chartService.updateLyric(chordWrapper, textBeforeCursor);
+            
+            setCurrentFocus({id: newChordWrapperId, position: 0});
+            
+            // Prevent the space from being added
+            event.preventDefault();
         } else if (event.key === 'Backspace') {
             const selection = window.getSelection();
             setCurrentFocus({position: cursorPosition - 1});
@@ -90,7 +98,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
         setCurrentFocus({id: chordWrapper.id, position: getCursorPos()});
-        console.log(chordWrapper.parent.id);
+        console.log(chordWrapper.id);
     }
       
     return (
