@@ -57,19 +57,23 @@ export class ChartService {
 
             if (block) {
                 // Find the index of the previousElement in the children array
-                const index = block.children.findIndex((element) => element.id === previousElement.id);
-    
+                const lineIndex = block.children.findIndex((element) => element.id === previousElement.id);
+                const chordWrapperIndex = previousElement.children.findIndex((element) => element.id === chordWrapper.id);
+
                 // Split the chordWrapper
                 newChordWrapperId = this.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
 
                 // Create a new Line instance and initialize children
                 const newLine = new Line(block, uuidv4());
-                const newChildren = [...previousElement.children.slice(index + 1)];
+                    console.log(...previousElement.children);
+                const newChildren = [...previousElement.children.slice(chordWrapperIndex + 1)];
+                    console.log(...newChildren)
+                    console.log(...previousElement.children);
                 newLine.children = newChildren;
-                previousElement.children.slice(0, index + 1);
+                previousElement.children = previousElement.children.slice(chordWrapperIndex + 1);
     
                 // Insert the new Line right after the previousElement
-                block.children.splice(index + 1, 0, newLine);
+                block.children.splice(lineIndex + 1, 0, newLine);
             } else {
                 console.error('The previous element is not found within any Block.');
             }
@@ -156,15 +160,15 @@ export class ChartService {
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.
     //If you call this function with a ChordWrapper, for example, it will give you an array like this [block id, line id, chord wrapper id]
-    private traceIds(targets: Identifiable): string[]{
-        return this.traceIdsHelper([], targets).reverse();
+    private traceIds(target: Identifiable): string[]{
+        return this.traceIdsHelper([], target).reverse();
     }
 
     //Helper method for above method. The recursive base case is when the current identifiable has no parent (meaning it is a block)
     private traceIdsHelper(idTrace: string[], identifiable: Identifiable): string[]{
         idTrace.push(identifiable.id);
 
-        if(identifiable.parent){
+        if(identifiable.parent && !(identifiable.parent instanceof Chart)){
             return this.traceIdsHelper(idTrace, identifiable.parent);
         }
 
