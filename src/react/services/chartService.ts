@@ -31,9 +31,11 @@ export class ChartService {
     
                 // Create a new ChordWrapper instance
                 const newChordWrapper = new ChordWrapper(line, newChordWrapperId, chordSymbol, lyricSegment);
-    
                 // Insert the new ChordWrapper right after the previousElement
                 line.children.splice(index + 1, 0, newChordWrapper);
+
+                const previousChordWrapper = this.locateElement<ChordWrapper>(previousElement, updatedChart);
+                previousChordWrapper.setLyricSegment(previousChordWrapper.lyricSegment.replace(lyricSegment, ''));
             } else {
                 console.error('The previous element is not found within any Line.');
             }
@@ -44,46 +46,59 @@ export class ChartService {
         return newChordWrapperId;
     }
 
-    public insertNewLine(previousElement: Line, chordWrapper:ChordWrapper, textAfterCursor:string): string {
-        let newChordWrapperId;
+    public insertNewLine(currentLine: Line, currentlyFocusedChordWrapper: ChordWrapper, cursorPosition: number): string {
+        let newLineId;
 
         this.setChart((previousChart: Chart) => {
-            // Copy the original chord chart to be able to modify it
             const updatedChart = cloneDeep(previousChart);
             
             // Retrieve the block that contains the previous line.
-            const block:Block = this.locateElement<Block>((previousElement.parent as Block), updatedChart);
+            const block:Block = this.locateElement<Block>((currentLine.parent), updatedChart);
             console.log(block);
 
-            if (block) {
-                // Find the index of the previousElement in the children array
-                const lineIndex = block.children.findIndex((element) => element.id === previousElement.id);
-                const chordWrapperIndex = previousElement.children.findIndex((element) => element.id === chordWrapper.id);
-
-                // Split the chordWrapper
-                newChordWrapperId = this.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
-
-                // Create a new Line instance and initialize children
-                const newLine = new Line(block, uuidv4());
-                    console.log(...previousElement.children);
-                const newChildren = [...previousElement.children.slice(chordWrapperIndex + 1)];
-                    console.log(...newChildren)
-                    console.log(...previousElement.children);
-                newLine.children = newChildren;
-                previousElement.children = previousElement.children.slice(chordWrapperIndex + 1);
-    
-                // Insert the new Line right after the previousElement
-                block.children.splice(lineIndex + 1, 0, newLine);
-            } else {
+            if (!block) {
                 console.error('The previous element is not found within any Block.');
+                return;
             }
-    
+
+            // Find the index of the currentLine in the children array
+            const lineIndex = block.children.findIndex((_line) => _line.id === currentLine.id);
+            const chordWrapperIndex = currentLine.children.findIndex((_chordWrapper) => _chordWrapper.id === currentlyFocusedChordWrapper.id);
+            const newLine = new Line(block, uuidv4());
+            
+            if(cursorPosition === 0){
+                // moveChordWrapperToNewLine
+            }
+            else{
+                // splitChordWrapperAcrossLines
+            }
+
             return updatedChart;
         });
 
-        return newChordWrapperId;
+        return newLineId;
     }
-    
+
+    private moveChordWrapperToNewLine(){
+
+    }
+
+    private splitChordWrapperAcrossLines(){
+        const chordWrapperAfterSplitLyric = currentlyFocusedChordWrapper.lyricSegment.substring(cursorPosition);
+        newLine.children = [new ChordWrapper(newLine, uuidv4(), '', chordWrapperAfterSplitLyric), ...currentLine.children.slice(chordWrapperIndex + 1)];
+        
+
+        const previousLine = this.locateElement<Line>(currentLine, updatedChart)
+        previousLine.children = previousLine.children.slice(0, chordWrapperIndex + 1);
+
+        const chordWrapperBeforeSplitLyric = currentlyFocusedChordWrapper.lyricSegment.substring(0, cursorPosition);
+        const previousChordWrapper = this.locateElement<ChordWrapper>(currentlyFocusedChordWrapper, updatedChart);
+        previousChordWrapper.setLyricSegment(chordWrapperBeforeSplitLyric);
+
+        // Insert the new Line right after the previousElement
+        block.children.splice(lineIndex + 1, 0, newLine);
+    }
+
     public mergeChordWrapper(targetElement: ChordWrapper, direction: -1 | 1){
         let normalizedDirection:number = direction;
         this.setChart((previousChart: Chart) => {

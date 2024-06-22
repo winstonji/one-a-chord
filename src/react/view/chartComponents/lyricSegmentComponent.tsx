@@ -34,25 +34,18 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = getCursorPos();
-
         const textAfterCursor = editableRef.current.textContent.slice(cursorPosition);
-        const textBeforeCursor = editableRef.current.textContent.slice(0, cursorPosition);
         const contentLength = editableRef.current.textContent.length;
-        
         
         if (event.key === ' ' && editableRef.current) {
             const newChordWrapperId = chartService.insertNewChordWrapper(chordWrapper, '', textAfterCursor);
-            chartService.updateLyric(chordWrapper, textBeforeCursor);
-            
             setCurrentFocus({id: newChordWrapperId, position: 0});
             
             // Prevent the space from being added
             event.preventDefault();
         } else if (event.key === 'Enter' && editableRef.current) {
-            const newChordWrapperId = chartService.insertNewLine(chordWrapper.parent, chordWrapper, textAfterCursor);
-            chartService.updateLyric(chordWrapper, textBeforeCursor);
-            
-            setCurrentFocus({id: newChordWrapperId, position: 0});
+            chartService.insertNewLine(chordWrapper.parent, chordWrapper, cursorPosition);            
+            setCurrentFocus({id: '1', position: 0});
             
             // Prevent the space from being added
             event.preventDefault();
