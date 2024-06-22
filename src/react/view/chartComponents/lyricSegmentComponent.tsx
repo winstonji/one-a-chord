@@ -44,8 +44,8 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             // Prevent the space from being added
             event.preventDefault();
         } else if (event.key === 'Enter' && editableRef.current) {
-            chartService.insertNewLine(chordWrapper.parent, chordWrapper, cursorPosition);            
-            setCurrentFocus({id: '1', position: 0});
+            const newLine = chartService.insertNewLine(chordWrapper.parent, chordWrapper, cursorPosition);            
+            setCurrentFocus({id: newLine.children[0].id, position: 0});
             
             // Prevent the space from being added
             event.preventDefault();
