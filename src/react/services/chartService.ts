@@ -64,7 +64,6 @@ export class ChartService {
             const firstChordWrapper = this.locateElement<ChordWrapper>(currentlyFocusedChordWrapper, updatedChart)
             if(cursorPosition === 0){
                 secondLine = this.moveChordWrapperToNewLine(firstChordWrapper);
-                console.log(secondLine);
             }
             else{
                 secondLine = this.splitChordWrapperToNewLine(firstChordWrapper, cursorPosition);
@@ -73,7 +72,6 @@ export class ChartService {
             return updatedChart;
         });
 
-        console.log(secondLine);
         return secondLine;
     }
 
