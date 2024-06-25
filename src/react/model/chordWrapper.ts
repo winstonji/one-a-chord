@@ -1,10 +1,8 @@
 import { KeyValue, Key } from "./key";
 import { Line } from "./line";
 import { Identifiable } from "./interfaces/identifiable";
-import { v4 as uuidv4 } from 'uuid';
 import { extensionsPattern, qualitiesPattern, rootsPattern, slashesPattern } from "./constants/chordSymbolConstants";
 import { hasDuplicates, parseChordSymbol } from "../utils/chordSymbolUtils";
-import { last } from "rxjs";
 
 export class ChordWrapper implements Identifiable{
 
@@ -20,16 +18,13 @@ export class ChordWrapper implements Identifiable{
     constructor(parent: Line, id: string, backingString:string, lyricSegment:string){
         this.id = id;
         this.parent = parent;
-        this.setChordSymbol(backingString, true);
+        this.setChordSymbol(backingString);
         this.lyricSegment = lyricSegment;
     }
     
-    public setChordSymbol = function(newChordSymbol:string, fromConstructor?: boolean){
+    public setChordSymbol = function(newChordSymbol:string){
         this.backingString = newChordSymbol;
         let newRoot = parseChordSymbol(newChordSymbol, rootsPattern);
-        if(!fromConstructor){
-            console.log(newRoot);
-        }
 		let newQuality = parseChordSymbol(newChordSymbol, qualitiesPattern);
 		let newExtensions = parseChordSymbol(newChordSymbol, extensionsPattern);
 		let newSlash = parseChordSymbol(newChordSymbol, slashesPattern);

@@ -6,7 +6,8 @@ import { Block } from '../../model/block';
 import BlockComponent from '../chartComponents/blockComponent';
 
 function SingleColumn(){
-    const {chart} = useContext(ChartContext);
+    const {chartEditingState} = useContext(ChartContext);
+    const chart = chartEditingState.chart
     const metadata: ChartMetaData = chart.metaData;
     const blocks: Block[] = chart.children;
 

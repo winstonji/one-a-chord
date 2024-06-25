@@ -2,10 +2,11 @@ import React, { useContext, useRef, useEffect } from 'react'
 import { ChordWrapper } from '../../model/chordWrapper';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
+import { getCursorPos } from '../../utils/selectionUtil';
 
 function ChordSymbolComponent(chordWrapper: ChordWrapper) {
 
-    const {chartService}: {chartService: ChartService} = useContext(ChartContext);
+    const {setChartEditingState} = useContext(ChartContext);
     const editableRef = useRef(null); // Ref for the contentEditable div
 
     useEffect(() => {
@@ -17,20 +18,17 @@ function ChordSymbolComponent(chordWrapper: ChordWrapper) {
 
     const updateChordSymbol = (updatedSymbol: string) => {
         // Save the cursor position before updating the state
-        const selection = window.getSelection();
-        const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-        const startOffset = range ? range.startOffset : 0;
+        const cursorPosition = getCursorPos();
 
-        chartService.updateChord(chordWrapper, updatedSymbol);
+        setChartEditingState((chartEditingState) => {
+            const chartService = ChartService.with(chartEditingState.chart);
+            chartService.updateChord(chordWrapper, updatedSymbol);
 
-        // Restore the cursor position after the state update
-        if (editableRef.current && range) {
-            const newRange = document.createRange();
-            newRange.setStart(editableRef.current.childNodes[0] || editableRef.current, startOffset);
-            newRange.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-        }
+            return {
+                ...chartEditingState,
+                chart: chartService.finalize(),
+            }
+        })
     }; 
 
     return (

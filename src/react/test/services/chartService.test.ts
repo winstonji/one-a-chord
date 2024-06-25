@@ -10,23 +10,10 @@ describe("chartService::updateChord tests", () => {
     let chartService: ChartService;
     let fakeChart: FakeChart;
 
-    //beforeAll runs a single time before any tests run in the current describe block.
-    beforeAll(() => {
-
-        //This is setting up a mock for the setChart function inside of chartService.
-        //This is so we can control it and override the behaviour, since it's expecting a react hook.
-        const setChartMock = jest.fn();
-        setChartMock.mockImplementation((updateFn: (chart: Chart) => Chart) => {
-            fakeChart.chart = updateFn(fakeChart.chart);
-        });
-
-        chartService = new ChartService(setChartMock);
-    });
-
-
     //beforeEach runs before every single test() call. This resets the fakeChart for subsequent tests.
     beforeEach(() => {
         fakeChart = generateFakeChart();
+        chartService = new ChartService(fakeChart.chart);
     });
 
 
@@ -37,6 +24,7 @@ describe("chartService::updateChord tests", () => {
     });
 
     test("update a chord wrapper and check the backing string", () => {
+        expect(fakeChart.getFirstChordWrapper().backingString).not.toEqual("A");
         chartService.updateChord(fakeChart.getFirstChordWrapper(), "A");
         expect(fakeChart.getFirstChordWrapper().backingString).toEqual("A");
     });
