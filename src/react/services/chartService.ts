@@ -22,7 +22,7 @@ export class ChartService {
         return this.chart;
     }
 
-    public insertNewChordWrapperAfter(previousChordWrapper: ChordWrapper, chordSymbol: string, splittingPoint: number): ChordWrapper {           
+    public splitChordWrapper(previousChordWrapper: ChordWrapper, chordSymbol: string, splittingPoint: number): ChordWrapper {           
         // Retrieve the line that contains the previousElement.
         const previousChordWrapperRef:ChordWrapper = this.locateElement<ChordWrapper>(previousChordWrapper, this.chart);
 

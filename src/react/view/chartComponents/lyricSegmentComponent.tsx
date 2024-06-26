@@ -53,7 +53,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
 
             setChartEditingState((chartEditingState) => {
                 const chartService = ChartService.with(chartEditingState.chart);
-                const newChordWrapper = chartService.insertNewChordWrapperAfter(chordWrapper, '', cursorPosition);
+                const newChordWrapper = chartService.splitChordWrapper(chordWrapper, '', cursorPosition);
             
                 return {
                     chart: chartService.finalize(),
@@ -137,6 +137,34 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
                 setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.length});
                 event.preventDefault();
             } 
+        } else if (event.key === 'ArrowUp') {
+            if (event.ctrlKey) {
+                const newFocus:ChordWrapper = chordWrapper.getFirstInBlock();
+                if (newFocus) {
+                    setCurrentFocus({id: newFocus.id, position: 0})
+                }
+                event.preventDefault();
+                return;
+            }
+            const nextChordWrapper = chordWrapper.jumpUp();
+            if (nextChordWrapper) {
+                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+            }
+            event.preventDefault();
+        }  else if (event.key === 'ArrowDown') {
+            if (event.ctrlKey) {
+                const newFocus:ChordWrapper = chordWrapper.getLastInBlock();
+                if (newFocus) {
+                    setCurrentFocus({id: newFocus.id, position: newFocus.lyricSegment.length})
+                }
+                event.preventDefault();
+                return;
+            }
+            const nextChordWrapper = chordWrapper.jumpDown();
+            if (nextChordWrapper) {
+                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+            }
+            event.preventDefault();
         }
     };
     

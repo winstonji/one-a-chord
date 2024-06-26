@@ -3,6 +3,8 @@ import { Line } from "./line";
 import { Identifiable } from "./interfaces/identifiable";
 import { extensionsPattern, qualitiesPattern, rootsPattern, slashesPattern } from "./constants/chordSymbolConstants";
 import { hasDuplicates, parseChordSymbol } from "../utils/chordSymbolUtils";
+import { Children } from "react";
+import { first } from "rxjs";
 
 export class ChordWrapper implements Identifiable{
 
@@ -58,7 +60,7 @@ export class ChordWrapper implements Identifiable{
 
     getNeighbor = function(direction: 1 | -1): ChordWrapper{
         const line:Line = this.parent;
-        const currentIndex:number = line.children.findIndex(cw => cw.id === this.id)
+        const currentIndex:number = line.children.findIndex(cw => cw.id === this.id);
         const neighborIndex = currentIndex + direction;
         if (neighborIndex < line.children.length && neighborIndex >= 0) {
             return line.children[neighborIndex];
@@ -72,4 +74,41 @@ export class ChordWrapper implements Identifiable{
         }
         return null;
     }
+
+    getFirstInBlock = function(): ChordWrapper{
+        const firstLine:Line = this.parent.getFirstInBlock();
+        const firstInBlock = firstLine.getStart();
+        if (this.id === firstInBlock.id) {
+            return this.getPrevious();
+        }
+        return firstInBlock;
+    }
+
+    getLastInBlock = function(): ChordWrapper{
+        const lastLine:Line = this.parent.getLastInBlock();
+        const lastInBlock:ChordWrapper = lastLine.getEnd();
+        if (this.id === lastInBlock.id) {
+            return this.getNext();
+        }
+        return lastInBlock;
+    }
+
+    jumpUp = function(): ChordWrapper{
+        return this.jumpLine(-1);
+    }
+
+    jumpDown = function(): ChordWrapper{
+        return this.jumpLine(1);
+    }
+
+    jumpLine = function(direction: -1 | 1): ChordWrapper {
+        const currentLine: Line = this.parent;
+        const currentIndex: number = currentLine.children.findIndex(cw => cw.id === this.id);
+        const nextLine = currentLine.getNeighbor(direction);
+        if (currentIndex >= nextLine.children.length) {
+            return nextLine.children[nextLine.children.length - 1];
+        }
+        return nextLine.children[currentIndex];
+    }
+    
 }

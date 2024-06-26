@@ -34,4 +34,12 @@ export class Block implements Identifiable{
         }
         return null;
     }
+
+    getStart = function(): Line {
+        return this.children[0];
+    }
+
+    getEnd = function(): Line {
+        return this.children[this.children.length - 1];
+    }
 }
