@@ -12,9 +12,9 @@ function ChordSymbolComponent(chordWrapper: LineElement) {
     useEffect(() => {
         // Set the initial chord symbol content
         if (editableRef.current) {
-            editableRef.current.textContent = chordWrapper.backingString;
+            editableRef.current.textContent = chordWrapper.chordSymbol.backingString;
         }
-    }, [chordWrapper.backingString]);
+    }, [chordWrapper.chordSymbol.backingString]);
 
     const updateChordSymbol = (updatedSymbol: string) => {
         // Save the cursor position before updating the state

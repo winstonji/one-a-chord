@@ -22,30 +22,30 @@ export class ChartService {
         return this.chart;
     }
 
-    public splitChordWrapper(previousChordWrapper: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
+    public splitChordWrapper(firstChordWrapper: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
         // Retrieve the line that contains the previousElement.
-        const previousChordWrapperRef:LineElement = this.locateElement<LineElement>(previousChordWrapper, this.chart);
+        const firstChordWrapperRef:LineElement = this.locateElement<LineElement>(firstChordWrapper, this.chart);
 
-        if (!previousChordWrapperRef) {
-            console.error(`The requested chord wrapper with id ${previousChordWrapper.id} cannot be found.`);
+        if (!firstChordWrapperRef) {
+            console.error(`The requested chord wrapper with id ${firstChordWrapper.id} cannot be found.`);
             return null;
         }
 
-        const line = previousChordWrapperRef.parent;
+        const line = firstChordWrapperRef.parent;
 
         // Find the index of the previousElement in the chordWrappers array
-        const index = line.children.findIndex((element) => element.id === previousChordWrapperRef.id);
+        const index = line.children.findIndex((element) => element.id === firstChordWrapperRef.id);
 
-        const lyricsBeforeSplit = previousChordWrapperRef.lyricSegment.substring(0, splittingPoint);
-        const lyricsAfterSplit = previousChordWrapperRef.lyricSegment.substring(splittingPoint);
+        const lyricsBeforeSplit = firstChordWrapperRef.lyricSegment.lyric.substring(0, splittingPoint);
+        const lyricsAfterSplit = firstChordWrapperRef.lyricSegment.lyric.substring(splittingPoint);
 
-        previousChordWrapperRef.setLyricSegment(lyricsBeforeSplit);
+        firstChordWrapperRef.lyricSegment.lyric = lyricsBeforeSplit;
 
         // Create a new ChordWrapper instance and insert after previousChordWrapperRef
-        const newChordWrapper = new LineElement(line, uuidv4(), chordSymbol, lyricsAfterSplit);
-        line.children.splice(index + 1, 0, newChordWrapper);
+        const secondChordWrapper = new LineElement(line, uuidv4(), chordSymbol, lyricsAfterSplit);
+        line.children.splice(index + 1, 0, secondChordWrapper);
 
-        return newChordWrapper;
+        return secondChordWrapper;
     }
 
     public insertNewLineAfter(currentlyFocusedChordWrapper: LineElement, splittingPoint: number): Line {
@@ -93,11 +93,11 @@ export class ChartService {
             secondLine
         } = this.getDataForNewLineCreation(chordWrapper);
        
-        secondLine.children = [new LineElement(secondLine, uuidv4(), '', chordWrapper.lyricSegment.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
+        secondLine.children = [new LineElement(secondLine, uuidv4(), '', chordWrapper.lyricSegment.lyric.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
         
         firstLine.children = firstLine.children.slice(0, chordWrapperIndex + 1);
 
-        chordWrapper.setLyricSegment(chordWrapper.lyricSegment.substring(0, splitPoint));
+        chordWrapper.lyricSegment.lyric = (chordWrapper.lyricSegment.lyric.substring(0, splitPoint));
 
         // Insert the new Line right after the previousElement
         
@@ -135,14 +135,14 @@ export class ChartService {
             let mergedChordSymbol:string;
             let mergedLyricSegment:string;
             if (direction < 0) {
-                mergedChordSymbol = line.children[index + direction].backingString + updatedTarget.backingString;
-                mergedLyricSegment = line.children[index + direction].lyricSegment + updatedTarget.lyricSegment;
+                mergedChordSymbol = line.children[index + direction].chordSymbol.backingString + updatedTarget.chordSymbol.backingString;
+                mergedLyricSegment = line.children[index + direction].lyricSegment.lyric + updatedTarget.lyricSegment.lyric;
             } else {
-                mergedChordSymbol = updatedTarget.backingString + line.children[index + direction].backingString;
-                mergedLyricSegment = updatedTarget.lyricSegment + line.children[index + direction].lyricSegment;
+                mergedChordSymbol = updatedTarget.chordSymbol.backingString + line.children[index + direction].chordSymbol.backingString;
+                mergedLyricSegment = updatedTarget.lyricSegment.lyric + line.children[index + direction].lyricSegment.lyric;
             }
-            updatedTarget.setChordSymbol(mergedChordSymbol);
-            updatedTarget.setLyricSegment(mergedLyricSegment);
+            updatedTarget.chordSymbol.setChordSymbol(mergedChordSymbol);
+            updatedTarget.lyricSegment.lyric = mergedLyricSegment;
             line.children.splice(index + direction, 1);
         } else {
             console.error('Invalid merge operation: target or neighbor element not found.');
@@ -156,7 +156,7 @@ export class ChartService {
      */
     public updateLyric(chordWrapper: LineElement, lyric: string){
         const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
-        chordWrapperRef.setLyricSegment(lyric);
+        chordWrapperRef.lyricSegment.lyric = lyric;
     }
 
     /**
@@ -172,7 +172,7 @@ export class ChartService {
         // Locate and update the chord wrapper
         const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
 
-        chordWrapperRef.setChordSymbol(chordSymbolString);
+        chordWrapperRef.chordSymbol.setChordSymbol(chordSymbolString);
     }
     
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.

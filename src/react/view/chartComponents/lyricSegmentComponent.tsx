@@ -14,7 +14,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
     useEffect(() => {
         // Set the initial lyric content
         if (editableRef.current) {
-            editableRef.current.textContent = chordWrapper.lyricSegment;
+            editableRef.current.textContent = chordWrapper.lyricSegment.lyric;
 
             if(currentFocus.id === chordWrapper.id){
                 editableRef.current.focus();
@@ -88,7 +88,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
 
                 setChartEditingState((chartEditingState) => {
 
-                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.length;
+                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.lyric.length;
                     const chartService = ChartService.with(chartEditingState.chart);
                     chartService.mergeChordWrapper(chordWrapper, -1);
 
@@ -110,7 +110,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
                 
                 setChartEditingState((chartEditingState) => {
 
-                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.length;
+                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.lyric.length;
                     const chartService = ChartService.with(chartEditingState.chart);
                     chartService.mergeChordWrapper(chordWrapper, 1);
 
@@ -134,7 +134,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
         } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
             const nextChordWrapper = chordWrapper.getPrevious();
             if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.length});
+                setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.lyric.length});
                 event.preventDefault();
             } 
         } else if (event.key === 'ArrowUp') {
@@ -155,7 +155,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
             if (event.ctrlKey) {
                 const newFocus:LineElement = chordWrapper.getLastInBlock();
                 if (newFocus) {
-                    setCurrentFocus({id: newFocus.id, position: newFocus.lyricSegment.length})
+                    setCurrentFocus({id: newFocus.id, position: newFocus.lyricSegment.lyric.length})
                 }
                 event.preventDefault();
                 return;

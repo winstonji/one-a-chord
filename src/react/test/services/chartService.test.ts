@@ -24,19 +24,19 @@ describe("chartService::updateChord tests", () => {
     });
 
     test("update a chord wrapper and check the backing string", () => {
-        expect(fakeChart.getFirstChordWrapper().backingString).not.toEqual("A");
+        expect(fakeChart.getFirstChordWrapper().chordSymbol.backingString).not.toEqual("A");
         chartService.updateChord(fakeChart.getFirstChordWrapper(), "A");
-        expect(fakeChart.getFirstChordWrapper().backingString).toEqual("A");
+        expect(fakeChart.getFirstChordWrapper().chordSymbol.backingString).toEqual("A");
     });
 
     test("update a chord wrapper and check the root", () => {
-        expect(fakeChart.getFirstChordWrapper().root).not.toEqual("Gb");
+        expect(fakeChart.getFirstChordWrapper().chordSymbol.root).not.toEqual("Gb");
         chartService.updateChord(fakeChart.getFirstChordWrapper(), "Gb");
-        expect(fakeChart.getFirstChordWrapper().root).toEqual(Key.Gb);
+        expect(fakeChart.getFirstChordWrapper().chordSymbol.root).toEqual(Key.Gb);
     });
 
     test("update a chord wrapper and check the quality", () => {
         chartService.updateChord(fakeChart.getFirstChordWrapper(), "Gbmaj");
-        expect(fakeChart.getFirstChordWrapper().quality).toEqual("maj");
+        expect(fakeChart.getFirstChordWrapper().chordSymbol.quality).toEqual("maj");
     });
 });

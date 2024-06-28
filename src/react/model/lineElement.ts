@@ -1,11 +1,12 @@
 import { Line } from "./line";
 import { Identifiable } from "./interfaces/identifiable";
 import { ChordSymbol } from "./chordSymbol";
+import { LyricSegment } from "./lyricSegment";
 
 export class LineElement implements Identifiable{
 
     public chordSymbol:ChordSymbol;
-    public lyricSegment?:string = "";
+    public lyricSegment:LyricSegment;
     public id: string;
     public parent: Line;
 
@@ -13,13 +14,9 @@ export class LineElement implements Identifiable{
         this.id = id;
         this.parent = parent;
         this.chordSymbol = new ChordSymbol(this, backingString);
-        this.lyricSegment = lyricSegment;
+        this.lyricSegment = new LyricSegment(this, lyricSegment);
     }
     
-    setLyricSegment = function(newLyric:string) {
-        this.lyricSegment = newLyric;
-    }
-
     getNext = function(): LineElement{
         return this.getNeighbor(1);
     }

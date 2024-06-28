@@ -1,6 +1,6 @@
 import { Identifiable } from "./interfaces/identifiable";
 import { LineElement } from "./lineElement";
-import { v4 as uuidv4 } from 'uuid';import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 export class LyricSegment implements Identifiable{
     public lyric:string;
