@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import ChordSymbolComponent from './chordSymbolComponent';
 import LyricSegmentComponent from './lyricSegmentComponent';
-import { ChordWrapper } from '../../model/chordWrapper';
+import { LineElement } from '../../model/lineElement';
 
-function ChordWrapperComponent(chordWrapper:ChordWrapper) {
+function LineElementComponent(chordWrapper:LineElement) {
 	
     
     
@@ -13,4 +13,4 @@ function ChordWrapperComponent(chordWrapper:ChordWrapper) {
     </div>);
 }
 
-export default ChordWrapperComponent;
+export default LineElementComponent;

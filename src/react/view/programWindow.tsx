@@ -10,7 +10,7 @@ export const ChartContext = createContext<IChartContext>(null);
 
 const ProgramWindow = () => {
 
-    const [chartEditingState, setChartEditingState] = useState<ChartEditingState>(() => {
+    const [chartEditingState, setChartEditingState] = useState<ChartEditingState>((): ChartEditingState => {
         const chart: Chart = generateFakeChart().chart;
 
         //default focus to first chord wrapper in the chart.
@@ -19,7 +19,7 @@ const ProgramWindow = () => {
             position: 0
         };
 
-        return {chart, currentFocus};
+        return {chart, currentFocus} as ChartEditingState;
     });
     
     /**

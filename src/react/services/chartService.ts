@@ -1,5 +1,5 @@
 import { Chart } from "../model/chart";
-import { ChordWrapper } from "../model/chordWrapper";
+import { LineElement } from "../model/lineElement";
 import cloneDeep from 'lodash/cloneDeep'
 import { Identifiable } from "../model/interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
@@ -22,9 +22,9 @@ export class ChartService {
         return this.chart;
     }
 
-    public splitChordWrapper(previousChordWrapper: ChordWrapper, chordSymbol: string, splittingPoint: number): ChordWrapper {           
+    public splitChordWrapper(previousChordWrapper: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
         // Retrieve the line that contains the previousElement.
-        const previousChordWrapperRef:ChordWrapper = this.locateElement<ChordWrapper>(previousChordWrapper, this.chart);
+        const previousChordWrapperRef:LineElement = this.locateElement<LineElement>(previousChordWrapper, this.chart);
 
         if (!previousChordWrapperRef) {
             console.error(`The requested chord wrapper with id ${previousChordWrapper.id} cannot be found.`);
@@ -42,15 +42,15 @@ export class ChartService {
         previousChordWrapperRef.setLyricSegment(lyricsBeforeSplit);
 
         // Create a new ChordWrapper instance and insert after previousChordWrapperRef
-        const newChordWrapper = new ChordWrapper(line, uuidv4(), chordSymbol, lyricsAfterSplit);
+        const newChordWrapper = new LineElement(line, uuidv4(), chordSymbol, lyricsAfterSplit);
         line.children.splice(index + 1, 0, newChordWrapper);
 
         return newChordWrapper;
     }
 
-    public insertNewLineAfter(currentlyFocusedChordWrapper: ChordWrapper, splittingPoint: number): Line {
+    public insertNewLineAfter(currentlyFocusedChordWrapper: LineElement, splittingPoint: number): Line {
         
-        const currentlyFocusedChordWrapperRef: ChordWrapper = this.locateElement<ChordWrapper>(currentlyFocusedChordWrapper, this.chart);
+        const currentlyFocusedChordWrapperRef: LineElement = this.locateElement<LineElement>(currentlyFocusedChordWrapper, this.chart);
 
         if (!currentlyFocusedChordWrapperRef) {
             console.error(`The requested chord wrapper with id ${currentlyFocusedChordWrapper.id} cannot be found.`);
@@ -68,7 +68,7 @@ export class ChartService {
         return secondLine;
     }
 
-    private moveChordWrapperToNewLine(chordWrapper: ChordWrapper): Line{
+    private moveChordWrapperToNewLine(chordWrapper: LineElement): Line{
         const {
             firstLine,
             block,
@@ -84,7 +84,7 @@ export class ChartService {
     }
 
 
-    private splitChordWrapperToNewLine(chordWrapper: ChordWrapper, splitPoint: number): Line{
+    private splitChordWrapperToNewLine(chordWrapper: LineElement, splitPoint: number): Line{
         const {
             firstLine,
             block,
@@ -93,7 +93,7 @@ export class ChartService {
             secondLine
         } = this.getDataForNewLineCreation(chordWrapper);
        
-        secondLine.children = [new ChordWrapper(secondLine, uuidv4(), '', chordWrapper.lyricSegment.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
+        secondLine.children = [new LineElement(secondLine, uuidv4(), '', chordWrapper.lyricSegment.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
         
         firstLine.children = firstLine.children.slice(0, chordWrapperIndex + 1);
 
@@ -105,7 +105,7 @@ export class ChartService {
         return secondLine;
     }
 
-    private getDataForNewLineCreation(chordWrapper: ChordWrapper){
+    private getDataForNewLineCreation(chordWrapper: LineElement){
         const firstLine:Line = chordWrapper.parent;
         const block:Block = firstLine.parent;
         const chordWrapperIndex = firstLine.children.findIndex((_cw) => _cw.id === chordWrapper.id);
@@ -122,9 +122,9 @@ export class ChartService {
         }
     }
 
-    public mergeChordWrapper(targetElement: ChordWrapper, direction: -1 | 1){
+    public mergeChordWrapper(targetElement: LineElement, direction: -1 | 1){
         const line: Line = this.locateElement<Line>(targetElement.parent, this.chart);
-        const updatedTarget: ChordWrapper = this.locateElement<ChordWrapper>(targetElement, this.chart);
+        const updatedTarget: LineElement = this.locateElement<LineElement>(targetElement, this.chart);
         if (!line) {
             return null;
         }
@@ -154,8 +154,8 @@ export class ChartService {
      * @param lyric the new lyric value.
      * @param chordWrapper the location of the lyric segment to be updated.
      */
-    public updateLyric(chordWrapper: ChordWrapper, lyric: string){
-        const chordWrapperRef: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, this.chart);
+    public updateLyric(chordWrapper: LineElement, lyric: string){
+        const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
         chordWrapperRef.setLyricSegment(lyric);
     }
 
@@ -167,10 +167,10 @@ export class ChartService {
      * @param slash root of the chord symbol as a KeyValue.
      * @param chordWrapper the location of the chord symbol to be updated.
      */
-    public updateChord(chordWrapper:ChordWrapper, chordSymbolString:string){
+    public updateChord(chordWrapper:LineElement, chordSymbolString:string){
         
         // Locate and update the chord wrapper
-        const chordWrapperRef: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, this.chart);
+        const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
 
         chordWrapperRef.setChordSymbol(chordSymbolString);
     }

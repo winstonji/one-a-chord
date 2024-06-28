@@ -1,11 +1,11 @@
 import { Block } from "./block";
-import { ChordWrapper } from "./chordWrapper";
+import { LineElement } from "./lineElement";
 import { Identifiable } from "./interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 
 export class Line implements Identifiable{
 
-    public children?:ChordWrapper[];
+    public children?:LineElement[];
     public id: string;
     public parent: Block;
 
@@ -47,11 +47,11 @@ export class Line implements Identifiable{
         return this.parent.getEnd();
     }
 
-    getStart = function(): ChordWrapper {
+    getStart = function(): LineElement {
         return this.children[0];
     }
 
-    getEnd = function(): ChordWrapper{
+    getEnd = function(): LineElement{
         return this.children[this.children.length - 1];
     }
 }

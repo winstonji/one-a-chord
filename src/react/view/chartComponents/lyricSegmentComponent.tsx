@@ -1,10 +1,10 @@
 import React, { useContext, useRef, useEffect } from 'react';
-import { ChordWrapper } from '../../model/chordWrapper';
+import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { getCursorPos } from '../../utils/selectionUtil';
 import { ChartService } from '../../services/chartService';
 
-function LyricSegmentComponent(chordWrapper: ChordWrapper) {
+function LyricSegmentComponent(chordWrapper: LineElement) {
     
     const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
@@ -139,7 +139,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             } 
         } else if (event.key === 'ArrowUp') {
             if (event.ctrlKey) {
-                const newFocus:ChordWrapper = chordWrapper.getFirstInBlock();
+                const newFocus:LineElement = chordWrapper.getFirstInBlock();
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.id, position: 0})
                 }
@@ -153,7 +153,7 @@ function LyricSegmentComponent(chordWrapper: ChordWrapper) {
             event.preventDefault();
         }  else if (event.key === 'ArrowDown') {
             if (event.ctrlKey) {
-                const newFocus:ChordWrapper = chordWrapper.getLastInBlock();
+                const newFocus:LineElement = chordWrapper.getLastInBlock();
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.id, position: newFocus.lyricSegment.length})
                 }

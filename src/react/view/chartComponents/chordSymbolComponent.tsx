@@ -1,10 +1,10 @@
 import React, { useContext, useRef, useEffect } from 'react'
-import { ChordWrapper } from '../../model/chordWrapper';
+import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { getCursorPos } from '../../utils/selectionUtil';
 
-function ChordSymbolComponent(chordWrapper: ChordWrapper) {
+function ChordSymbolComponent(chordWrapper: LineElement) {
 
     const {setChartEditingState} = useContext(ChartContext);
     const editableRef = useRef(null); // Ref for the contentEditable div
