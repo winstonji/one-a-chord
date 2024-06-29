@@ -3,7 +3,7 @@ import { LineElement } from "./lineElement";
 import { v4 as uuidv4 } from 'uuid';
 
 export class LyricSegment implements Identifiable{
-    public lyric:string;
+    public lyric:string = "";
     public id:string;
     public parent:LineElement;
 
