@@ -122,7 +122,8 @@ function LyricSegmentComponent(lineElement: LineElement) {
                 }
             });
             event.preventDefault(); // Prevent the default backspace behavior
-        } else if (event.key === 'Delete' && cursorPosition === lineElement.lyricSegment.lyric.length  - 1) {
+        } else if (event.key === 'Delete' && cursorPosition === contentLength) {
+            event.preventDefault();
             if (event.ctrlKey) {
                 setChartEditingState((chartEditingState) => {
                     const chartService = ChartService.with(chartEditingState.chart);
@@ -131,32 +132,25 @@ function LyricSegmentComponent(lineElement: LineElement) {
                         chart: chartService.finalize(),
                         currentFocus: {
                             id: newFocus.lyricSegment.id,
-                            position: newFocus.lyricSegment.lyric.length
+                            position: contentLength
                         }
                     }
                 })
                 return;
-            }
-            const selection = window.getSelection();
-            setCurrentFocus({position: cursorPosition});
-            if (selection.anchorOffset === contentLength) {
-                
-                setChartEditingState((chartEditingState) => {
+            }                
+            setChartEditingState((chartEditingState) => {
+                const chartService = ChartService.with(chartEditingState.chart);
+                chartService.mergeLineElement(lineElement, 1);
 
-                    const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.mergeLineElement(lineElement, 1);
-
-                    setCurrentFocus({})
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            ...chartEditingState.currentFocus,
-                            position: cursorPositionAfterMerge
-                        }
+                setCurrentFocus({})
+                return {
+                    chart: chartService.finalize(),
+                    currentFocus: {
+                        ...chartEditingState.currentFocus,
+                        position: contentLength
                     }
-                });
-            }
+                }
+            });
         } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             const newFocus = lineElement.getNext();
             if (newFocus) {
