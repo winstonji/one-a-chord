@@ -77,5 +77,4 @@ export class LineElement implements Identifiable{
         }
         return nextLine.children[currentIndex];
     }
-    
 }

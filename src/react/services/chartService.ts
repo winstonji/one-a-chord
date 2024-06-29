@@ -22,24 +22,24 @@ export class ChartService {
         return this.chart;
     }
 
-    public splitChordWrapper(firstChordWrapper: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
+    public splitChordWrapper(firstLineElement: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
         // Retrieve the line that contains the previousElement.
-        const firstChordWrapperRef:LineElement = this.locateElement<LineElement>(firstChordWrapper, this.chart);
+        const firstLineElementRef:LineElement = this.locateElement<LineElement>(firstLineElement, this.chart);
 
-        if (!firstChordWrapperRef) {
-            console.error(`The requested chord wrapper with id ${firstChordWrapper.id} cannot be found.`);
+        if (!firstLineElementRef) {
+            console.error(`The requested chord wrapper with id ${firstLineElement.id} cannot be found.`);
             return null;
         }
 
-        const line = firstChordWrapperRef.parent;
+        const line = firstLineElementRef.parent;
 
         // Find the index of the previousElement in the chordWrappers array
-        const index = line.children.findIndex((element) => element.id === firstChordWrapperRef.id);
+        const index = line.children.findIndex((element) => element.id === firstLineElementRef.id);
 
-        const lyricsBeforeSplit = firstChordWrapperRef.lyricSegment.lyric.substring(0, splittingPoint);
-        const lyricsAfterSplit = firstChordWrapperRef.lyricSegment.lyric.substring(splittingPoint);
+        const lyricsBeforeSplit = firstLineElementRef.lyricSegment.lyric.substring(0, splittingPoint);
+        const lyricsAfterSplit = firstLineElementRef.lyricSegment.lyric.substring(splittingPoint);
 
-        firstChordWrapperRef.lyricSegment.lyric = lyricsBeforeSplit;
+        firstLineElementRef.lyricSegment.lyric = lyricsBeforeSplit;
 
         // Create a new ChordWrapper instance and insert after previousChordWrapperRef
         const secondChordWrapper = new LineElement(line, uuidv4(), chordSymbol, lyricsAfterSplit);
@@ -48,27 +48,27 @@ export class ChartService {
         return secondChordWrapper;
     }
 
-    public insertNewLineAfter(currentlyFocusedChordWrapper: LineElement, splittingPoint: number): Line {
+    public insertNewLineAfter(currentlyFocusedLineElement: LineElement, splittingPoint: number): Line {
         
-        const currentlyFocusedChordWrapperRef: LineElement = this.locateElement<LineElement>(currentlyFocusedChordWrapper, this.chart);
+        const currentlyFocusedChordWrapperRef: LineElement = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
 
         if (!currentlyFocusedChordWrapperRef) {
-            console.error(`The requested chord wrapper with id ${currentlyFocusedChordWrapper.id} cannot be found.`);
+            console.error(`The requested chord wrapper with id ${currentlyFocusedLineElement.id} cannot be found.`);
             return null;
         }
     
         let secondLine: Line;
         if(splittingPoint === 0){
-            secondLine = this.moveChordWrapperToNewLine(currentlyFocusedChordWrapperRef);
+            secondLine = this.moveLineElementToNewLine(currentlyFocusedChordWrapperRef);
         }
         else{
-            secondLine = this.splitChordWrapperToNewLine(currentlyFocusedChordWrapperRef, splittingPoint);
+            secondLine = this.splitLineElementToNewLine(currentlyFocusedChordWrapperRef, splittingPoint);
         }
 
         return secondLine;
     }
 
-    private moveChordWrapperToNewLine(chordWrapper: LineElement): Line{
+    private moveLineElementToNewLine(chordWrapper: LineElement): Line{
         const {
             firstLine,
             block,
@@ -84,7 +84,7 @@ export class ChartService {
     }
 
 
-    private splitChordWrapperToNewLine(chordWrapper: LineElement, splitPoint: number): Line{
+    private splitLineElementToNewLine(chordWrapper: LineElement, splitPoint: number): Line{
         const {
             firstLine,
             block,
@@ -122,7 +122,7 @@ export class ChartService {
         }
     }
 
-    public mergeChordWrapper(targetElement: LineElement, direction: -1 | 1){
+    public mergeLineElement(targetElement: LineElement, direction: -1 | 1): LineElement{
         const line: Line = this.locateElement<Line>(targetElement.parent, this.chart);
         const updatedTarget: LineElement = this.locateElement<LineElement>(targetElement, this.chart);
         if (!line) {
@@ -144,19 +144,70 @@ export class ChartService {
             updatedTarget.chordSymbol.setChordSymbol(mergedChordSymbol);
             updatedTarget.lyricSegment.lyric = mergedLyricSegment;
             line.children.splice(index + direction, 1);
+            return updatedTarget;
         } else {
-            console.error('Invalid merge operation: target or neighbor element not found.');
+            return this.mergeLineBack(targetElement);
         }
+    }
+
+    public mergeLineBack(currentlyFocusedLineElement:LineElement): LineElement{
+        const secondLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        let firstLine:Line = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
+        const newFocusIndex = firstLine.children.length;
+        firstLine.children = firstLine.children.concat(secondLine.children);
+        for (let child of firstLine.children){
+            child.parent = firstLine;
+        }
+
+        // delete secondLine.
+        const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
+        const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+        block.children.splice(lineIndex, 1);
+        return firstLine.children[newFocusIndex];
+    }
+
+    public deletePrevious(currentlyFocusedLineElement:LineElement): LineElement{
+        const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        if (!line) {
+            return null;
+        }
+        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+        if (currentIndex === 0) {
+            return this.mergeLineBack(currentlyFocusedLineElement);
+        }
+        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
+        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+        line.children.splice(deleteIndex, 1);
+
+        return currentlyFocusedLineElement;
+    }
+
+    public deleteNext(currentlyFocusedLineElement:LineElement): LineElement{
+        const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        if (!line) {
+            return null;
+        }
+        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+        if (currentIndex === line.children.length - 1) {
+            return this.mergeLineBack(currentlyFocusedLineElement.getNext()).getPrevious();
+        }
+        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
+        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+        line.children.splice(deleteIndex, 1);
+
+        return currentlyFocusedLineElement;
     }
 
     /**
      * Updates the lyric segment within a specified chordWrapper.
      * @param lyric the new lyric value.
-     * @param chordWrapper the location of the lyric segment to be updated.
+     * @param lineElement the location of the lyric segment to be updated.
      */
-    public updateLyric(chordWrapper: LineElement, lyric: string){
-        const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
-        chordWrapperRef.lyricSegment.lyric = lyric;
+    public updateLyric(lineElement: LineElement, lyric: string){
+        const lineElementRef: LineElement = this.locateElement<LineElement>(lineElement, this.chart);
+        lineElementRef.lyricSegment.lyric = lyric;
     }
 
     /**
@@ -165,14 +216,14 @@ export class ChartService {
      * @param quality of the chord symbol as a string. 
      * @param extensions of the chord symbol as a string array.
      * @param slash root of the chord symbol as a KeyValue.
-     * @param chordWrapper the location of the chord symbol to be updated.
+     * @param lineElement the location of the chord symbol to be updated.
      */
-    public updateChord(chordWrapper:LineElement, chordSymbolString:string){
+    public updateChord(lineElement:LineElement, chordSymbolString:string){
         
         // Locate and update the chord wrapper
-        const chordWrapperRef: LineElement = this.locateElement<LineElement>(chordWrapper, this.chart);
+        const lineElementRef: LineElement = this.locateElement<LineElement>(lineElement, this.chart);
 
-        chordWrapperRef.chordSymbol.setChordSymbol(chordSymbolString);
+        lineElementRef.chordSymbol.setChordSymbol(chordSymbolString);
     }
     
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.

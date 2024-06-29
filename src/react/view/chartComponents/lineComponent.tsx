@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Line } from '../../model/line';
 import { LineElement } from '../../model/lineElement';
-import LineElementComponent from './chordWrapperComponent';
+import LineElementComponent from './lineElementComponent';
 import "./styles/lineElementStyles.scss"
 
 function LineComponent(line:Line) {

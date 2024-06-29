@@ -4,7 +4,7 @@ import { ChartContext } from '../programWindow';
 import { getCursorPos } from '../../utils/selectionUtil';
 import { ChartService } from '../../services/chartService';
 
-function LyricSegmentComponent(chordWrapper: LineElement) {
+function LyricSegmentComponent(lineElement: LineElement) {
     
     const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
@@ -14,14 +14,15 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
     useEffect(() => {
         // Set the initial lyric content
         if (editableRef.current) {
-            editableRef.current.textContent = chordWrapper.lyricSegment.lyric;
+            editableRef.current.textContent = lineElement.lyricSegment.lyric;
 
-            if(currentFocus.id === chordWrapper.id){
+            if(currentFocus.id === lineElement.lyricSegment.id){
                 editableRef.current.focus();
                 
                 const textNode = editableRef.current.childNodes[0];
                 const selection: Selection = window.getSelection();
                 const updatedPosition: Range = document.createRange();
+                console.log()
                 updatedPosition.setStart(textNode, currentFocus.position);
                 updatedPosition.setEnd(textNode, currentFocus.position);
                 selection.removeAllRanges();
@@ -33,7 +34,7 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
     const updateLyric = (updatedLyric: string) => {
         setChartEditingState((chartEditingState) => {
             const chartService = ChartService.with(chartEditingState.chart);
-            chartService.updateLyric(chordWrapper, updatedLyric);
+            chartService.updateLyric(lineElement, updatedLyric);
         
             return {
                 chart: chartService.finalize(),
@@ -53,11 +54,10 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
 
             setChartEditingState((chartEditingState) => {
                 const chartService = ChartService.with(chartEditingState.chart);
-                const newChordWrapper = chartService.splitChordWrapper(chordWrapper, '', cursorPosition);
-            
+                const newChordWrapper = chartService.splitChordWrapper(lineElement, '', cursorPosition);
                 return {
                     chart: chartService.finalize(),
-                    currentFocus: {id: newChordWrapper.id, position: 0}
+                    currentFocus: {id: newChordWrapper.lyricSegment.id, position: 0}
                 }
             });
             
@@ -68,12 +68,12 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
 
             setChartEditingState((chartEditingState) => {
                 const chartService = ChartService.with(chartEditingState.chart);
-                const newLine = chartService.insertNewLineAfter(chordWrapper, cursorPosition);
+                const newLine = chartService.insertNewLineAfter(lineElement, cursorPosition);
 
                 return {
                     chart: chartService.finalize(),
                     currentFocus: {
-                        id: newLine.children[0].id,
+                        id: newLine.children[0].lyricSegment.id,
                         position: 0
                     }
                 }
@@ -81,38 +81,71 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
             
             // setCurrentFocus({id: newLine.children[0].id, position: 0});
             event.preventDefault();
-        } else if (event.key === 'Backspace') {
-            const selection = window.getSelection();
-            // Check if the cursor is at the start
-            if (selection.anchorOffset === 0) {
-
+        } else if (event.key === 'Backspace' && cursorPosition === 0) {
+            event.preventDefault();
+            if (event.ctrlKey) {
                 setChartEditingState((chartEditingState) => {
-
-                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.lyric.length;
                     const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.mergeChordWrapper(chordWrapper, -1);
-
-                    setCurrentFocus({})
+                    const newFocus:LineElement = chartService.deletePrevious(lineElement);
                     return {
                         chart: chartService.finalize(),
                         currentFocus: {
-                            ...chartEditingState.currentFocus,
+                            id: newFocus.lyricSegment.id,
+                            position: 0
+                        }
+                    }
+                })
+                return;
+            }
+            setChartEditingState((chartEditingState) => {
+
+                const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
+                const chartService = ChartService.with(chartEditingState.chart);
+                const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
+                const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
+                if (lineElementIndex === 0) {
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            id: newFocus.lyricSegment.id,
+                            position: 0
+                        }
+                    }
+                } else {
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            id: newFocus.lyricSegment.id,
                             position: cursorPositionAfterMerge
                         }
                     }
-                });
-                event.preventDefault(); // Prevent the default backspace behavior
+                }
+            });
+            event.preventDefault(); // Prevent the default backspace behavior
+        } else if (event.key === 'Delete' && cursorPosition === lineElement.lyricSegment.lyric.length  - 1) {
+            if (event.ctrlKey) {
+                setChartEditingState((chartEditingState) => {
+                    const chartService = ChartService.with(chartEditingState.chart);
+                    const newFocus:LineElement = chartService.deleteNext(lineElement);
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            id: newFocus.lyricSegment.id,
+                            position: newFocus.lyricSegment.lyric.length
+                        }
+                    }
+                })
+                return;
             }
-        } else if (event.key === 'Delete') {
             const selection = window.getSelection();
             setCurrentFocus({position: cursorPosition});
             if (selection.anchorOffset === contentLength) {
                 
                 setChartEditingState((chartEditingState) => {
 
-                    const cursorPositionAfterMerge = chordWrapper.getPrevious().lyricSegment.lyric.length;
+                    const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
                     const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.mergeChordWrapper(chordWrapper, 1);
+                    chartService.mergeLineElement(lineElement, 1);
 
                     setCurrentFocus({})
                     return {
@@ -123,57 +156,64 @@ function LyricSegmentComponent(chordWrapper: LineElement) {
                         }
                     }
                 });
-                event.preventDefault(); // Prevent the default delete behavior
             }
         } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
-            const nextChordWrapper = chordWrapper.getNext();
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+            const newFocus = lineElement.getNext();
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
                 event.preventDefault();
             }
         } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
-            const nextChordWrapper = chordWrapper.getPrevious();
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.id, position: nextChordWrapper.lyricSegment.lyric.length});
+            const newFocus = lineElement.getPrevious();
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
                 event.preventDefault();
             } 
         } else if (event.key === 'ArrowUp') {
+            let newFocus:LineElement
             if (event.ctrlKey) {
-                const newFocus:LineElement = chordWrapper.getFirstInBlock();
+                newFocus = lineElement.getFirstInBlock();
                 if (newFocus) {
-                    setCurrentFocus({id: newFocus.id, position: 0})
+                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
                 }
                 event.preventDefault();
                 return;
             }
-            const nextChordWrapper = chordWrapper.jumpUp();
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+            newFocus = lineElement.jumpUp();
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
             }
             event.preventDefault();
-        }  else if (event.key === 'ArrowDown') {
+        } else if (event.key === 'ArrowDown') {
+            let newFocus:LineElement;
             if (event.ctrlKey) {
-                const newFocus:LineElement = chordWrapper.getLastInBlock();
+                newFocus = lineElement.getLastInBlock();
                 if (newFocus) {
-                    setCurrentFocus({id: newFocus.id, position: newFocus.lyricSegment.lyric.length})
+                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
                 }
                 event.preventDefault();
                 return;
             }
-            const nextChordWrapper = chordWrapper.jumpDown();
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.id, position: 0});
+            newFocus = lineElement.jumpDown();
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
             }
             event.preventDefault();
+        } else if (event.ctrlKey && event.code === 'KeyK') {
+            event.preventDefault();
+            const chordSymbol = lineElement.chordSymbol;
+            console.log(`id: ${chordSymbol.id}`);
+            setCurrentFocus({id: chordSymbol.id, position:chordSymbol.backingString.length});
         }
+        
     };
     
 
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
-        setCurrentFocus({id: chordWrapper.id, position: getCursorPos()});
-        console.log(chordWrapper.id);
+        setCurrentFocus({id: lineElement.lyricSegment.id, position: getCursorPos()});
+        console.log(lineElement.lyricSegment.id);
     }
       
     return (
