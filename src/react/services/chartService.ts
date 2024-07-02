@@ -48,21 +48,21 @@ export class ChartService {
         return secondChordWrapper;
     }
 
-    public insertNewLineAfter(currentlyFocusedLineElement: LineElement, splittingPoint: number): Line {
+    public insertNewLineAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Line {
         
-        const currentlyFocusedChordWrapperRef: LineElement = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
+        const currentlyFocusedLineElementRef: LineElement = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
 
-        if (!currentlyFocusedChordWrapperRef) {
+        if (!currentlyFocusedLineElementRef) {
             console.error(`The requested chord wrapper with id ${currentlyFocusedLineElement.id} cannot be found.`);
             return null;
         }
     
         let secondLine: Line;
-        if(splittingPoint === 0){
-            secondLine = this.moveLineElementToNewLine(currentlyFocusedChordWrapperRef);
+        if(cursorPosition === 0){
+            secondLine = this.moveLineElementToNewLine(currentlyFocusedLineElementRef);
         }
         else{
-            secondLine = this.splitLineElementToNewLine(currentlyFocusedChordWrapperRef, splittingPoint);
+            secondLine = this.splitLineElementToNewLine(currentlyFocusedLineElementRef, cursorPosition);
         }
 
         return secondLine;
@@ -228,17 +228,16 @@ export class ChartService {
         }
     }
 
-    insertNewBlockAfter(lineElement: LineElement, cursorPosition: number): Block {
-        const secondLyricSegment = lineElement.lyricSegment.lyric.substring(cursorPosition);
-        this.updateLyric(lineElement, lineElement.lyricSegment.lyric.substring(0, cursorPosition));
-        const currentBlock:Block = this.locateElement<Block>(lineElement.parent.parent, this.chart);
-        const index:number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
+    insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
+
+        const currentBlock:Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
+        const blockIndex:number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
         const newBlock:Block = new Block(currentBlock.parent, "Block", uuidv4());
-        const newLine:Line = new Line(newBlock, uuidv4());
-        const newLineElement = new LineElement(newLine, uuidv4(), "", secondLyricSegment);
-        currentBlock.parent.children.splice(index + 1, 0, newBlock);
-        newBlock.children = [newLine];
-        newLine.children = [newLineElement];
+        const newLine:Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
+        const newLineIndex:number = newLine.parent.children.findIndex((element) => element.id === newLine.id);
+        currentBlock.parent.children.splice(blockIndex + 1, 0, newBlock);
+        currentBlock.children = currentBlock.children.slice(0, newLineIndex)
+        newBlock.children = currentBlock.children.slice(newLineIndex);
         return newBlock;
     }
 
