@@ -9,7 +9,7 @@ export class Block implements Identifiable{
     public header:string;
     public id: string;
     public parent?:Chart;
-    public children?:Line[];
+    public children:Line[];
     
     constructor(parent: Chart, header:string, id: string){
         this.id = id;
@@ -41,5 +41,13 @@ export class Block implements Identifiable{
 
     getEnd = function(): Line {
         return this.children[this.children.length - 1];
+    }
+
+    getFirst = function(): Block{
+        return this.parent.children[0];
+    }
+
+    getLast = function(): Block{
+        return this.parent.children[this.parent.children.length - 1];
     }
 }

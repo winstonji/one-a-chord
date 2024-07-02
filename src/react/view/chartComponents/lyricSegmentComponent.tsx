@@ -3,6 +3,7 @@ import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { getCursorPos } from '../../utils/selectionUtil';
 import { ChartService } from '../../services/chartService';
+import { Block } from '../../model/block';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
@@ -20,13 +21,14 @@ function LyricSegmentComponent(lineElement: LineElement) {
                 editableRef.current.focus();
                 
                 const textNode = editableRef.current.childNodes[0];
-                const selection: Selection = window.getSelection();
-                const updatedPosition: Range = document.createRange();
-                console.log()
-                updatedPosition.setStart(textNode, currentFocus.position);
-                updatedPosition.setEnd(textNode, currentFocus.position);
-                selection.removeAllRanges();
-                selection.addRange(updatedPosition);
+                if (textNode) {
+                    const selection: Selection = window.getSelection();
+                    const updatedPosition: Range = document.createRange();
+                    updatedPosition.setStart(textNode, currentFocus.position);
+                    updatedPosition.setEnd(textNode, currentFocus.position);
+                    selection.removeAllRanges();
+                    selection.addRange(updatedPosition);
+                }
             }
         }
     });
@@ -65,19 +67,32 @@ function LyricSegmentComponent(lineElement: LineElement) {
             event.preventDefault();
 
         } else if (event.key === 'Enter' && editableRef.current) {
-
-            setChartEditingState((chartEditingState) => {
-                const chartService = ChartService.with(chartEditingState.chart);
-                const newLine = chartService.insertNewLineAfter(lineElement, cursorPosition);
-
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        id: newLine.children[0].lyricSegment.id,
-                        position: 0
+            if (event.ctrlKey) {
+                setChartEditingState((chartEditingState) => {
+                    const chartService = ChartService.with(chartEditingState.chart);
+                    const newBlock:Block = chartService.insertNewBlockAfter(lineElement, cursorPosition);
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            id: newBlock.children[0].children[0].lyricSegment.id,
+                            position: 0
+                        }
                     }
-                }
-            })
+                })
+            } else {
+                setChartEditingState((chartEditingState) => {
+                    const chartService = ChartService.with(chartEditingState.chart);
+                    const newLine = chartService.insertNewLineAfter(lineElement, cursorPosition);
+    
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            id: newLine.children[0].lyricSegment.id,
+                            position: 0
+                        }
+                    }
+                })
+            }
             
             // setCurrentFocus({id: newLine.children[0].id, position: 0});
             event.preventDefault();
@@ -86,71 +101,70 @@ function LyricSegmentComponent(lineElement: LineElement) {
             if (event.ctrlKey) {
                 setChartEditingState((chartEditingState) => {
                     const chartService = ChartService.with(chartEditingState.chart);
-                    const newFocus:LineElement = chartService.deletePrevious(lineElement);
+                    chartService.deletePrevious(lineElement);
                     return {
                         chart: chartService.finalize(),
                         currentFocus: {
-                            id: newFocus.lyricSegment.id,
+                            id: lineElement.lyricSegment.id,
                             position: 0
                         }
                     }
                 })
                 return;
+            } else if (lineElement.getPrevious() !== null){
+                setChartEditingState((chartEditingState) => {
+                    const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
+                    const chartService = ChartService.with(chartEditingState.chart);
+                    const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
+                    const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
+                    if (lineElementIndex === 0) {
+                        return {
+                            chart: chartService.finalize(),
+                            currentFocus: {
+                                id: newFocus.lyricSegment.id,
+                                position: 0
+                            }
+                        }
+                    } else {
+                        return {
+                            chart: chartService.finalize(),
+                            currentFocus: {
+                                id: newFocus.lyricSegment.id,
+                                position: cursorPositionAfterMerge
+                            }
+                        }
+                    }
+                });
             }
-            setChartEditingState((chartEditingState) => {
-
-                const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
-                const chartService = ChartService.with(chartEditingState.chart);
-                const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
-                const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
-                if (lineElementIndex === 0) {
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: newFocus.lyricSegment.id,
-                            position: 0
-                        }
-                    }
-                } else {
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: newFocus.lyricSegment.id,
-                            position: cursorPositionAfterMerge
-                        }
-                    }
-                }
-            });
-            event.preventDefault(); // Prevent the default backspace behavior
         } else if (event.key === 'Delete' && cursorPosition === contentLength) {
             event.preventDefault();
             if (event.ctrlKey) {
                 setChartEditingState((chartEditingState) => {
                     const chartService = ChartService.with(chartEditingState.chart);
-                    const newFocus:LineElement = chartService.deleteNext(lineElement);
+                    chartService.deleteNext(lineElement);
                     return {
                         chart: chartService.finalize(),
                         currentFocus: {
-                            id: newFocus.lyricSegment.id,
+                            id: lineElement.lyricSegment.id,
                             position: contentLength
                         }
                     }
                 })
-                return;
-            }                
-            setChartEditingState((chartEditingState) => {
-                const chartService = ChartService.with(chartEditingState.chart);
-                chartService.mergeLineElement(lineElement, 1);
-
-                setCurrentFocus({})
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        ...chartEditingState.currentFocus,
-                        position: contentLength
+            } else {
+                setChartEditingState((chartEditingState) => {
+                    const chartService = ChartService.with(chartEditingState.chart);
+                    chartService.mergeLineElement(lineElement, 1);
+    
+                    setCurrentFocus({})
+                    return {
+                        chart: chartService.finalize(),
+                        currentFocus: {
+                            ...chartEditingState.currentFocus,
+                            position: contentLength
+                        }
                     }
-                }
-            });
+                });
+            }
         } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             const newFocus = lineElement.getNext();
             if (newFocus) {
@@ -193,6 +207,26 @@ function LyricSegmentComponent(lineElement: LineElement) {
                 setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
             }
             event.preventDefault();
+        } else if (event.code === 'Home') {
+            let newFocus:LineElement;
+            if (event.ctrlKey) {
+                newFocus = lineElement.parent.parent.getFirst().getStart().getStart();
+            } else {
+                newFocus = lineElement.parent.getStart();
+            }
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
+            }
+        } else if (event.code === 'End') {
+            let newFocus:LineElement;
+            if (event.ctrlKey) {
+                newFocus = lineElement.parent.parent.getLast().getEnd().getEnd();
+            } else {
+                newFocus = lineElement.parent.getEnd();
+            }
+            if (newFocus) {
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
+            }
         } else if (event.ctrlKey && event.code === 'KeyK') {
             event.preventDefault();
             const chordSymbol = lineElement.chordSymbol;

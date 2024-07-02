@@ -131,7 +131,7 @@ export class ChartService {
             
         const index = line.children.findIndex((element) => element.id === updatedTarget.id);
 
-        if (index !== -1 && index + direction >= 0 && index + direction < line.children.length) {
+        if (index >= 0 && index + direction >= 0 && index + direction < line.children.length) {
             let mergedChordSymbol:string;
             let mergedLyricSegment:string;
             if (direction < 0) {
@@ -146,73 +146,105 @@ export class ChartService {
             line.children.splice(index + direction, 1);
             return updatedTarget;
         } else {
-            return this.mergeLineIntoPrevious(targetElement);
+            if (direction < 0) {
+                return this.mergeLineIntoPrevious(targetElement);
+            } else {
+                return this.mergeNextIntoLine(targetElement);
+            }
         }
     }
 
     public mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement{
-        const secondLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        let firstLine:Line = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
-        const newFocusIndex = firstLine.children.length;
-        firstLine.children = firstLine.children.concat(secondLine.children);
-        for (let child of firstLine.children){
-            child.parent = firstLine;
+        try {
+            const secondLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+            let firstLine:Line = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
+            console.log(firstLine.id);
+            const newFocusIndex = firstLine.children.length;
+            firstLine.children = firstLine.children.concat(secondLine.children);
+            for (let child of firstLine.children){
+                child.parent = firstLine;
+            }
+    
+            // delete secondLine.
+            const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
+            const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+            block.children.splice(lineIndex, 1);
+            if (block.children.length <= 0) {
+                this.deleteBlock(block);
+            }
+            return firstLine.children[newFocusIndex];
+        } catch (error) {
+            return undefined;
         }
-
-        // delete secondLine.
-        const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
-        const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
-        block.children.splice(lineIndex, 1);
-        return firstLine.children[newFocusIndex];
     }
 
     public mergeNextIntoLine(currentlyFocusedLineElement:LineElement): LineElement{
-        let firstLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        const secondLine:Line = this.locateElement<Line>(firstLine.getNext(), this.chart);
-        firstLine.children = firstLine.children.concat(secondLine.children);
-        for (let child of firstLine.children){
-            child.parent = firstLine;
+        try {
+            let firstLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+            const secondLine:Line = this.locateElement<Line>(firstLine.getNext(), this.chart);
+            firstLine.children = firstLine.children.concat(secondLine.children);
+            for (let child of firstLine.children){
+                child.parent = firstLine;
+            }
+    
+            // delete secondLine.
+            const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
+            const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+            block.children.splice(lineIndex, 1);
+            if (block.children.length <= 0) {
+                this.deleteBlock(block);
+            }
+            return currentlyFocusedLineElement;
+        } catch (error) {
+            return undefined;
         }
-
-        // delete secondLine.
-        const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
-        const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
-        block.children.splice(lineIndex, 1);
-        return currentlyFocusedLineElement;
     }
 
-    public deletePrevious(currentlyFocusedLineElement:LineElement): LineElement{
+    public deletePrevious(currentlyFocusedLineElement:LineElement){
         const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        if (!line) {
-            return null;
-        }
-        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
-        if (currentIndex === 0) {
-            return this.mergeLineIntoPrevious(currentlyFocusedLineElement);
-        }
-        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
-        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+        if (line) {
+            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+            if (currentIndex === 0) {
+                return this.mergeLineIntoPrevious(currentlyFocusedLineElement);
+            }
+            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
+            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
 
-        line.children.splice(deleteIndex, 1);
-
-        return currentlyFocusedLineElement;
+            line.children.splice(deleteIndex, 1);
+        }
     }
 
-    public deleteNext(currentlyFocusedLineElement:LineElement): LineElement{
+    public deleteNext(currentlyFocusedLineElement:LineElement){
         const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        if (!line) {
-            return null;
-        }
-        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
-        if (currentIndex === line.children.length - 1) {
-            return this.mergeNextIntoLine(currentlyFocusedLineElement);
-        }
-        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
-        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+        if (line) {            
+            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+            if (currentIndex === line.children.length - 1) {
+                return this.mergeNextIntoLine(currentlyFocusedLineElement);
+            }
+            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
+            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
 
-        line.children.splice(deleteIndex, 1);
+            line.children.splice(deleteIndex, 1);
+        }
+    }
 
-        return currentlyFocusedLineElement;
+    insertNewBlockAfter(lineElement: LineElement, cursorPosition: number): Block {
+        const secondLyricSegment = lineElement.lyricSegment.lyric.substring(cursorPosition);
+        this.updateLyric(lineElement, lineElement.lyricSegment.lyric.substring(0, cursorPosition));
+        const currentBlock:Block = this.locateElement<Block>(lineElement.parent.parent, this.chart);
+        const index:number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
+        const newBlock:Block = new Block(currentBlock.parent, "Block", uuidv4());
+        const newLine:Line = new Line(newBlock, uuidv4());
+        const newLineElement = new LineElement(newLine, uuidv4(), "", secondLyricSegment);
+        currentBlock.parent.children.splice(index + 1, 0, newBlock);
+        newBlock.children = [newLine];
+        newLine.children = [newLineElement];
+        return newBlock;
+    }
+
+    public deleteBlock(target:Block){
+        const targetIndex:number = target.parent.children.findIndex((element) => element.id === target.id)
+        target.parent.children.splice(targetIndex, 1);
     }
 
     /**
