@@ -168,7 +168,11 @@ function LyricSegmentComponent(lineElement: LineElement) {
         } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             const newFocus = lineElement.getNext();
             if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
+                if (event.ctrlKey) {
+                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
+                } else {
+                    setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
+                }
                 event.preventDefault();
             }
         } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
@@ -241,7 +245,10 @@ function LyricSegmentComponent(lineElement: LineElement) {
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
         setCurrentFocus({id: lineElement.lyricSegment.id, position: getCursorPos()});
-        console.log(lineElement.lyricSegment.id);
+        console.log(`lyric: ${lineElement.lyricSegment.lyric}`);
+        console.log(`previous: ${lineElement.getPrevious().id}`);
+        console.log(`current:  ${lineElement.id}`);
+        console.log(`next:     ${lineElement.getNext().id}\nbreak`);
     }
       
     return (

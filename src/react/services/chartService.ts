@@ -64,7 +64,7 @@ export class ChartService {
         else{
             secondLine = this.splitLineElementToNewLine(currentlyFocusedLineElementRef, cursorPosition);
         }
-
+        
         return secondLine;
     }
 
@@ -229,17 +229,26 @@ export class ChartService {
     }
 
     insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
-
-        const currentBlock:Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
-        const blockIndex:number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
-        const newBlock:Block = new Block(currentBlock.parent, "Block", uuidv4());
-        const newLine:Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
-        const newLineIndex:number = newLine.parent.children.findIndex((element) => element.id === newLine.id);
+        const currentBlock: Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
+        const blockIndex: number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
+        const newBlock: Block = new Block(currentBlock.parent, "Block", uuidv4());
+        const newLine: Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
+        const newLineIndex: number = newLine.parent.children.findIndex((element) => element.id === newLine.id);
         currentBlock.parent.children.splice(blockIndex + 1, 0, newBlock);
-        currentBlock.children = currentBlock.children.slice(0, newLineIndex)
-        newBlock.children = currentBlock.children.slice(newLineIndex);
+        newBlock.children = currentBlock.children.splice(newLineIndex);
+
+        for (let child of newBlock.children) {
+            child.parent = newBlock;
+            for (let grandchild of child.children) {
+                grandchild.parent = child;
+                grandchild.lyricSegment.parent = grandchild;
+                grandchild.chordSymbol.parent = grandchild;
+            }
+        }
         return newBlock;
     }
+    
+    
 
     public deleteBlock(target:Block){
         const targetIndex:number = target.parent.children.findIndex((element) => element.id === target.id)
