@@ -27,11 +27,11 @@ export class ChordSymbol implements Identifiable {
 		let newExtensions = parseChordSymbol(newChordSymbol, extensionsPattern);
 		let newSlash = parseChordSymbol(newChordSymbol, slashesPattern);
         if (newRoot.length > 1) {
-			console.error("Invalid chord symbol: you can only have one root.");
+			console.error("Invalid chord symbol: you can have at most one root.");
 		} else if (newQuality.length > 1) {
-			console.error("Invalid chord symbol: you can only have one chord quality.");
+			console.error("Invalid chord symbol: you can have at most one chord quality.");
 		} else if (newSlash.length > 1) {
-			console.error("Invalid chord symbol: you can only have one slash root.");
+			console.error("Invalid chord symbol: you can have at most one slash root.");
 		} else if (hasDuplicates(newExtensions)) {
 			console.error("Invalid chord symbol: duplicate extension detected.");
 		} else {

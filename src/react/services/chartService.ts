@@ -237,12 +237,12 @@ export class ChartService {
         currentBlock.parent.children.splice(blockIndex + 1, 0, newBlock);
         newBlock.children = currentBlock.children.splice(newLineIndex);
 
-        for (let child of newBlock.children) {
-            child.parent = newBlock;
-            for (let grandchild of child.children) {
-                grandchild.parent = child;
-                grandchild.lyricSegment.parent = grandchild;
-                grandchild.chordSymbol.parent = grandchild;
+        for (let line of newBlock.children) {
+            line.parent = newBlock;
+            for (let lineElement of line.children) {
+                lineElement.parent = line;
+                lineElement.lyricSegment.parent = lineElement;
+                lineElement.chordSymbol.parent = lineElement;
             }
         }
         return newBlock;

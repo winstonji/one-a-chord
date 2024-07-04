@@ -23,12 +23,14 @@ function ChordSymbolComponent(lineElement: LineElement) {
             editableRef.current.focus();
             
             const textNode = editableRef.current.childNodes[0];
-            const selection: Selection = window.getSelection();
-            const updatedPosition: Range = document.createRange();
-            updatedPosition.setStart(textNode, currentFocus.position);
-            updatedPosition.setEnd(textNode, currentFocus.position);
-            selection.removeAllRanges();
-            selection.addRange(updatedPosition);
+            if (textNode) {
+                const selection: Selection = window.getSelection();
+                const updatedPosition: Range = document.createRange();
+                updatedPosition.setStart(textNode, currentFocus.position);
+                updatedPosition.setEnd(textNode, currentFocus.position);
+                selection.removeAllRanges();
+                selection.addRange(updatedPosition);
+            }
         }
     });
 
@@ -41,9 +43,12 @@ function ChordSymbolComponent(lineElement: LineElement) {
             chartService.updateChord(lineElement, updatedSymbol);
 
             return {
-                ...chartEditingState,
                 chart: chartService.finalize(),
-            }
+                currentFocus: {
+                    ...chartEditingState.currentFocus,
+                    position: getCursorPos()
+                }
+            };
         })
     };
 
