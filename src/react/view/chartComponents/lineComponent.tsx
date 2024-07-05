@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { Line } from '../../model/line';
-import { ChordWrapper } from '../../model/chordWrapper';
-import ChordWrapperComponent from './chordWrapperComponent';
+import { LineElement } from '../../model/lineElement';
+import LineElementComponent from './lineElementComponent';
 import "./styles/lineElementStyles.scss"
 
 function LineComponent(line:Line) {
 	
-	const chordWrappers:ChordWrapper[] = line.children;
+	const lineElements:LineElement[] = line.children;
 
 	return (<div className = "oac-row oac-row-flex-start oac-line oac-row-align-stretch">
-		{(!chordWrappers || chordWrappers.length === 0) && <strong>This lines has no chord data</strong>}
-		{chordWrappers && chordWrappers.map((chordWrapper:ChordWrapper) => {
-			return <ChordWrapperComponent key = {chordWrapper.id} {...chordWrapper}/>
+		{(!lineElements || lineElements.length === 0) && <strong>This lines has no chord data</strong>}
+		{lineElements && lineElements.map((lineElement:LineElement) => {
+			return <LineElementComponent key = {lineElement.id} {...lineElement}/>
 		})}
 	</div>);
 }

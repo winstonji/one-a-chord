@@ -1,71 +1,53 @@
-import React, { useEffect, useState, createContext, useRef } from 'react'
+import React, { useEffect, useState, createContext } from 'react'
 import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
-import { Key } from '../model/key';
-import { ChartMetaData } from '../model/chartMetaData';
-import { ChordWrapper } from '../model/chordWrapper';
-import { ChartService } from '../services/chartService';
-import { v4 as uuidv4 } from 'uuid';
-import { Line } from '../model/line';
-import { Block } from '../model/block';
 import { generateFakeChart } from '../test/testUtils/chartFaker';
+import { ChartEditingState, IChartContext } from './types/chartContext';
+import { CurrentFocus, UpdateCurrentFocusProps } from './types/currentFocus';
 
-export interface FocusRef{
-    id: string;
-    position: number;
-}
-
-export type UpdateFocusRefVal = Partial<FocusRef>;
-
-export interface ChartContextType {
-    chart: Chart;
-    chartService: ChartService;
-    currentFocus: FocusRef;
-    setCurrentFocus: (val: UpdateFocusRefVal) => void
-}
-
-export const ChartContext = createContext<ChartContextType>(null); 
+export const ChartContext = createContext<IChartContext>(null); 
 
 const ProgramWindow = () => {
 
-    const [chart, setChart] = useState<Chart | undefined>();
-    const chartService = new ChartService(setChart);
-    const [currentFocus, setCurrentFocus] = useState<FocusRef>();
+    const [chartEditingState, setChartEditingState] = useState<ChartEditingState>((): ChartEditingState => {
+        const chart: Chart = generateFakeChart().chart;
 
-    useEffect(() => {
-        const initialChart: Chart = generateFakeChart().chart;
-
-        //default to first chord wrapper in the chart.
-         setCurrentFocus({
-            id: initialChart.blocks[0].children[0].children[0].id,
+        //default focus to first chord wrapper in the chart.
+        const currentFocus: CurrentFocus = {
+            id: chart.children[0].children[0].children[0].id,
             position: 0
-        });
-        setChart(initialChart);
-    }, [])
-    
+        };
 
-    function currentFocusHelper(val: UpdateFocusRefVal){
-        setCurrentFocus((currentFocus) => {
+        return {chart, currentFocus} as ChartEditingState;
+    });
+    
+    /**
+     * A helper to update only the focus and not the chart data.
+     * @param newFocusVal The new fields to set on the focus object. Matches the shape of CurrentFocus but with optional fields. Any fields not specified will not be changed.
+     */
+    function currentFocusHelper(newFocusVal: UpdateCurrentFocusProps){
+        setChartEditingState((chartEditingState) => {
             return {
-                id: val.id?? currentFocus.id,
-                position: val.position?? currentFocus.position
+                ...chartEditingState,
+                currentFocus: {
+                    id: newFocusVal.id ?? chartEditingState.currentFocus.id,
+                    position: newFocusVal.position ?? chartEditingState.currentFocus.position
+                }
             }
         })
     }
 
-    const id = uuidv4();
-
 	return (
         <>
-        {chart && 
-            <ChartContext.Provider value={{chart, chartService, currentFocus, setCurrentFocus: currentFocusHelper}}>
+        {chartEditingState && 
+            <ChartContext.Provider value={{chartEditingState, setChartEditingState, setCurrentFocus: currentFocusHelper}}>
                 {<>
                     <Toolbar/>
                     <Canvas/>
                 </>}
                 {/* You can remove this line if you don't need to debug if the chart state is updating */}
-                <pre>{stringifyWithCircularForHTML(chart)}</pre>
+                <pre>{stringifyWithCircularForHTML(chartEditingState.chart)}</pre>
             </ChartContext.Provider>
         }
         </>

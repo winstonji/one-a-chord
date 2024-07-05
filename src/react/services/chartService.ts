@@ -1,100 +1,268 @@
 import { Chart } from "../model/chart";
-import { ChordWrapper } from "../model/chordWrapper";
+import { LineElement } from "../model/lineElement";
 import cloneDeep from 'lodash/cloneDeep'
 import { Identifiable } from "../model/interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
-import { KeyValue } from "../model/key";
 import { Line } from "../model/line";
+import { Block } from "../model/block";
 
 export class ChartService {
 
-    private setChart: React.Dispatch<React.SetStateAction<Chart>>;
+    private chart: Chart;
 
-    constructor(setChart: React.Dispatch<React.SetStateAction<Chart>>){
-        this.setChart = setChart;
+    constructor(chart: Chart){
+        this.chart = chart;
     }
 
-    public insertNewChordWrapper(previousElement: ChordWrapper, chordSymbol: string, lyricSegment: string): string {
-        let newChordWrapperId = uuidv4();
+    public static with(chart: Chart): ChartService{
+        return new ChartService(cloneDeep(chart));
+    }
 
-        this.setChart((previousChart: Chart) => {
-            // Copy the original chord chart to be able to modify it
-            const updatedChart = cloneDeep(previousChart);
+    public finalize(){
+        return this.chart;
+    }
+
+    public splitLineElement(firstLineElement: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
+        // Retrieve the line that contains the previousElement.
+        const firstLineElementRef:LineElement = this.locateElement<LineElement>(firstLineElement, this.chart);
+
+        if (!firstLineElementRef) {
+            console.error(`The requested chord wrapper with id ${firstLineElement.id} cannot be found.`);
+            return null;
+        }
+
+        const line = firstLineElementRef.parent;
+
+        // Find the index of the previousElement in the chordWrappers array
+        const index = line.children.findIndex((element) => element.id === firstLineElementRef.id);
+
+        const lyricsBeforeSplit = firstLineElementRef.lyricSegment.lyric.substring(0, splittingPoint);
+        const lyricsAfterSplit = firstLineElementRef.lyricSegment.lyric.substring(splittingPoint);
+
+        firstLineElementRef.lyricSegment.lyric = lyricsBeforeSplit;
+
+        // Create a new ChordWrapper instance and insert after previousChordWrapperRef
+        const secondChordWrapper = new LineElement(line, uuidv4(), chordSymbol, lyricsAfterSplit);
+        line.children.splice(index + 1, 0, secondChordWrapper);
+
+        return secondChordWrapper;
+    }
+
+    public insertNewLineAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Line {
+        
+        const currentlyFocusedLineElementRef: LineElement = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
+
+        if (!currentlyFocusedLineElementRef) {
+            console.error(`The requested chord wrapper with id ${currentlyFocusedLineElement.id} cannot be found.`);
+            return null;
+        }
+    
+        let secondLine: Line;
+        if(cursorPosition === 0){
+            secondLine = this.moveLineElementToNewLine(currentlyFocusedLineElementRef);
+        }
+        else{
+            secondLine = this.splitLineElementToNewLine(currentlyFocusedLineElementRef, cursorPosition);
+        }
+        
+        return secondLine;
+    }
+
+    private moveLineElementToNewLine(lineElement: LineElement): Line{
+        const {
+            firstLine,
+            block,
+            chordWrapperIndex,
+            lineIndex,
+            secondLine
+        } = this.getDataForNewLineCreation(lineElement);
+
+        secondLine.children = [...firstLine.children.slice(chordWrapperIndex)];
+        block.children.splice(lineIndex + 1, 0, secondLine);
+        firstLine.children = firstLine.children.slice(0, chordWrapperIndex);
+        return secondLine;
+    }
+
+
+    private splitLineElementToNewLine(lineElement: LineElement, splitPoint: number): Line{
+        const {
+            firstLine,
+            block,
+            chordWrapperIndex,
+            lineIndex,
+            secondLine
+        } = this.getDataForNewLineCreation(lineElement);
+       
+        secondLine.children = [new LineElement(secondLine, uuidv4(), '', lineElement.lyricSegment.lyric.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
+        
+        firstLine.children = firstLine.children.slice(0, chordWrapperIndex + 1);
+
+        lineElement.lyricSegment.lyric = (lineElement.lyricSegment.lyric.substring(0, splitPoint));
+
+        // Insert the new Line right after the previousElement
+        
+        block.children.splice(lineIndex + 1, 0, secondLine);
+        return secondLine;
+    }
+
+    private getDataForNewLineCreation(chordWrapper: LineElement){
+        const firstLine:Line = chordWrapper.parent;
+        const block:Block = firstLine.parent;
+        const chordWrapperIndex = firstLine.children.findIndex((_cw) => _cw.id === chordWrapper.id);
+        const lineIndex = block.children.findIndex((_line) => _line.id === firstLine.id);
+
+        const secondLine = new Line(block, uuidv4());
+
+        return {
+            firstLine,
+            block,
+            chordWrapperIndex,
+            lineIndex,
+            secondLine
+        }
+    }
+
+    public mergeLineElement(targetElement: LineElement, direction: -1 | 1): LineElement{
+        const line: Line = this.locateElement<Line>(targetElement.parent, this.chart);
+        const updatedTarget: LineElement = this.locateElement<LineElement>(targetElement, this.chart);
+        if (!line) {
+            return null;
+        }
             
-            // Retrieve the line that contains the previousElement.
-            const line:Line = this.locateElement<Line>(previousElement.parent, updatedChart);
-    
-            if (line) {
-                // Find the index of the previousElement in the chordWrappers array
-                const index = line.children.findIndex((element) => element.id === previousElement.id);
-    
-                // Create a new ChordWrapper instance
-                const newChordWrapper = new ChordWrapper(line, newChordWrapperId, chordSymbol, lyricSegment);
-    
-                // Insert the new ChordWrapper right after the previousElement
-                line.children.splice(index + 1, 0, newChordWrapper);
+        const index = line.children.findIndex((element) => element.id === updatedTarget.id);
+
+        if (index >= 0 && index + direction >= 0 && index + direction < line.children.length) {
+            let mergedChordSymbol:string;
+            let mergedLyricSegment:string;
+            if (direction < 0) {
+                mergedChordSymbol = line.children[index + direction].chordSymbol.backingString + updatedTarget.chordSymbol.backingString;
+                mergedLyricSegment = line.children[index + direction].lyricSegment.lyric + updatedTarget.lyricSegment.lyric;
             } else {
-                console.error('The previous element is not found within any Line.');
+                mergedChordSymbol = updatedTarget.chordSymbol.backingString + line.children[index + direction].chordSymbol.backingString;
+                mergedLyricSegment = updatedTarget.lyricSegment.lyric + line.children[index + direction].lyricSegment.lyric;
+            }
+            updatedTarget.chordSymbol.setChordSymbol(mergedChordSymbol);
+            updatedTarget.lyricSegment.lyric = mergedLyricSegment;
+            line.children.splice(index + direction, 1);
+            return updatedTarget;
+        } else {
+            if (direction < 0) {
+                return this.mergeLineIntoPrevious(targetElement);
+            } else {
+                return this.mergeNextIntoLine(targetElement);
+            }
+        }
+    }
+
+    public mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement{
+        try {
+            const secondLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+            let firstLine:Line = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
+            console.log(firstLine.id);
+            const newFocusIndex = firstLine.children.length;
+            firstLine.children = firstLine.children.concat(secondLine.children);
+            for (let child of firstLine.children){
+                child.parent = firstLine;
             }
     
-            return updatedChart;
-        });
+            // delete secondLine.
+            const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
+            const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+            block.children.splice(lineIndex, 1);
+            if (block.children.length <= 0) {
+                this.deleteBlock(block);
+            }
+            return firstLine.children[newFocusIndex];
+        } catch (error) {
+            return undefined;
+        }
+    }
 
-        return newChordWrapperId;
+    public mergeNextIntoLine(currentlyFocusedLineElement:LineElement): LineElement{
+        try {
+            let firstLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+            const secondLine:Line = this.locateElement<Line>(firstLine.getNext(), this.chart);
+            firstLine.children = firstLine.children.concat(secondLine.children);
+            for (let child of firstLine.children){
+                child.parent = firstLine;
+            }
+    
+            // delete secondLine.
+            const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
+            const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+            block.children.splice(lineIndex, 1);
+            if (block.children.length <= 0) {
+                this.deleteBlock(block);
+            }
+            return currentlyFocusedLineElement;
+        } catch (error) {
+            return undefined;
+        }
+    }
+
+    public deletePrevious(currentlyFocusedLineElement:LineElement){
+        const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        if (line) {
+            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+            if (currentIndex === 0) {
+                return this.mergeLineIntoPrevious(currentlyFocusedLineElement);
+            }
+            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
+            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+            line.children.splice(deleteIndex, 1);
+        }
+    }
+
+    public deleteNext(currentlyFocusedLineElement:LineElement){
+        const line:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        if (line) {            
+            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+            if (currentIndex === line.children.length - 1) {
+                return this.mergeNextIntoLine(currentlyFocusedLineElement);
+            }
+            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
+            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+            line.children.splice(deleteIndex, 1);
+        }
+    }
+
+    insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
+        const currentBlock: Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
+        const blockIndex: number = currentBlock.chart.children.findIndex((element) => element.id === currentBlock.id);
+        const newBlock: Block = new Block(currentBlock.chart, "Block", uuidv4());
+        const newLine: Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
+        const newLineIndex: number = newLine.parent.children.findIndex((element) => element.id === newLine.id);
+        currentBlock.chart.children.splice(blockIndex + 1, 0, newBlock);
+        newBlock.children = currentBlock.children.splice(newLineIndex);
+
+        for (let line of newBlock.children) {
+            line.parent = newBlock;
+            for (let grandchild of line.children) {
+                grandchild.parent = line;
+                grandchild.lyricSegment.parent = grandchild;
+                grandchild.chordSymbol.parent = grandchild;
+            }
+        }
+        return newBlock;
     }
     
-    public mergeChordWrapper(targetElement: ChordWrapper, direction: -1 | 1){
-        let normalizedDirection:number = direction;
-        this.setChart((previousChart: Chart) => {
-            const updatedChart = cloneDeep(previousChart);
-            const line: Line = this.locateElement<Line>(targetElement.parent, updatedChart);
-            const updatedTarget: ChordWrapper = this.locateElement<ChordWrapper>(targetElement, updatedChart);
-            if (line) {
-                const index = line.children.findIndex((element) => element.id === updatedTarget.id);
     
-                if (index !== -1 && index + normalizedDirection >= 0 && index + normalizedDirection < line.children.length) {
-                    let mergedChordSymbol:string;
-                    let mergedLyricSegment:string;
-                    if (normalizedDirection < 0) {
-                        mergedChordSymbol = line.children[index + normalizedDirection].backingString + updatedTarget.backingString;
-                        mergedLyricSegment = line.children[index + normalizedDirection].lyricSegment + updatedTarget.lyricSegment;
-                    } else {
-                        mergedChordSymbol = updatedTarget.backingString + line.children[index + normalizedDirection].backingString;
-                        mergedLyricSegment = updatedTarget.lyricSegment + line.children[index + normalizedDirection].lyricSegment;
-                    }
-                    updatedTarget.setChordSymbol(mergedChordSymbol);
-                    updatedTarget.setLyricSegment(mergedLyricSegment);
-                    // this.updateChord(targetElement, mergedChordSymbol);
-                    // this.updateLyric(targetElement, mergedLyricSegment);
-                    line.children.splice(index + direction, 1);
-                } else {
-                    console.error('Invalid merge operation: target or neighbor element not found.');
-                }
-            } else {
-                console.error('The target element is not found within any Line.');
-            }
-    
-            return updatedChart;
-        });
+
+    public deleteBlock(target:Block){
+        const targetIndex:number = target.chart.children.findIndex((element) => element.id === target.id)
+        target.chart.children.splice(targetIndex, 1);
     }
 
     /**
      * Updates the lyric segment within a specified chordWrapper.
      * @param lyric the new lyric value.
-     * @param chordWrapper the location of the lyric segment to be updated.
+     * @param lineElement the location of the lyric segment to be updated.
      */
-    public updateLyric(chordWrapper: ChordWrapper, lyric: string){
-        this.setChart((previousChart: Chart) => {
-
-            //We have to copy the original chord chart because otherwise we cannot modify it as it is a react immutable object
-            //After copying it, we can just lookup and modify the object we want
-            const updatedChart = cloneDeep(previousChart);
-            const chordWrapperToUpdate: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, updatedChart);
-
-            chordWrapperToUpdate.setLyricSegment(lyric);
-
-            return updatedChart;
-        });
+    public updateLyric(lineElement: LineElement, lyric: string){
+        const lineElementRef: LineElement = this.locateElement<LineElement>(lineElement, this.chart);
+        lineElementRef.lyricSegment.lyric = lyric;
     }
 
     /**
@@ -103,32 +271,28 @@ export class ChartService {
      * @param quality of the chord symbol as a string. 
      * @param extensions of the chord symbol as a string array.
      * @param slash root of the chord symbol as a KeyValue.
-     * @param chordWrapper the location of the chord symbol to be updated.
+     * @param lineElement the location of the chord symbol to be updated.
      */
-    public updateChord(chordWrapper:ChordWrapper, chordSymbolString:string){
-        this.setChart((previousChart:Chart) => {
-            // Deep clone the chart
-            const updatedChart = cloneDeep(previousChart);
-            // Locate and update the chord wrapper
-            const chordWrapperToUpdate: ChordWrapper = this.locateElement<ChordWrapper>(chordWrapper, updatedChart);
+    public updateChord(lineElement:LineElement, chordSymbolString:string){
+        
+        // Locate and update the chord wrapper
+        const lineElementRef: LineElement = this.locateElement<LineElement>(lineElement, this.chart);
 
-            chordWrapperToUpdate.setChordSymbol(chordSymbolString);
-            return updatedChart;
-        })
+        lineElementRef.chordSymbol.setChordSymbol(chordSymbolString);
     }
     
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.
     //If you call this function with a ChordWrapper, for example, it will give you an array like this [block id, line id, chord wrapper id]
-    private traceIds(targets: Identifiable): string[]{
-        return this.traceIdsHelper([], targets).reverse();
+    private traceIds(target: Identifiable): string[]{
+        return this.traceIdsHelper([], target).reverse();
     }
 
     //Helper method for above method. The recursive base case is when the current identifiable has no parent (meaning it is a block)
     private traceIdsHelper(idTrace: string[], identifiable: Identifiable): string[]{
         idTrace.push(identifiable.id);
 
-        if(identifiable.parent){
+        if(identifiable.parent && !(identifiable.parent instanceof Chart)){
             return this.traceIdsHelper(idTrace, identifiable.parent);
         }
 
@@ -143,7 +307,7 @@ export class ChartService {
     private locateElement<T extends Identifiable>(target: Identifiable, chart: Chart): T | undefined
     {
         const idTrace: string[] = this.traceIds(target);
-        return (this.locateElementHelper<T>(idTrace, 0, chart.blocks) as T);
+        return (this.locateElementHelper<T>(idTrace, 0, chart.children) as T);
     }
 
     private locateElementHelper<T extends Identifiable>(idTrace: string[], currentId: number, currentLevelItems: Identifiable[]): T | undefined
