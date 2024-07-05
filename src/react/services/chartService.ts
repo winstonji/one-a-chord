@@ -22,7 +22,7 @@ export class ChartService {
         return this.chart;
     }
 
-    public splitChordWrapper(firstLineElement: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
+    public splitLineElement(firstLineElement: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
         // Retrieve the line that contains the previousElement.
         const firstLineElementRef:LineElement = this.locateElement<LineElement>(firstLineElement, this.chart);
 
@@ -68,14 +68,14 @@ export class ChartService {
         return secondLine;
     }
 
-    private moveLineElementToNewLine(chordWrapper: LineElement): Line{
+    private moveLineElementToNewLine(lineElement: LineElement): Line{
         const {
             firstLine,
             block,
             chordWrapperIndex,
             lineIndex,
             secondLine
-        } = this.getDataForNewLineCreation(chordWrapper);
+        } = this.getDataForNewLineCreation(lineElement);
 
         secondLine.children = [...firstLine.children.slice(chordWrapperIndex)];
         block.children.splice(lineIndex + 1, 0, secondLine);
@@ -84,20 +84,20 @@ export class ChartService {
     }
 
 
-    private splitLineElementToNewLine(chordWrapper: LineElement, splitPoint: number): Line{
+    private splitLineElementToNewLine(lineElement: LineElement, splitPoint: number): Line{
         const {
             firstLine,
             block,
             chordWrapperIndex,
             lineIndex,
             secondLine
-        } = this.getDataForNewLineCreation(chordWrapper);
+        } = this.getDataForNewLineCreation(lineElement);
        
-        secondLine.children = [new LineElement(secondLine, uuidv4(), '', chordWrapper.lyricSegment.lyric.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
+        secondLine.children = [new LineElement(secondLine, uuidv4(), '', lineElement.lyricSegment.lyric.substring(splitPoint)), ...firstLine.children.slice(chordWrapperIndex + 1)];
         
         firstLine.children = firstLine.children.slice(0, chordWrapperIndex + 1);
 
-        chordWrapper.lyricSegment.lyric = (chordWrapper.lyricSegment.lyric.substring(0, splitPoint));
+        lineElement.lyricSegment.lyric = (lineElement.lyricSegment.lyric.substring(0, splitPoint));
 
         // Insert the new Line right after the previousElement
         
@@ -230,19 +230,19 @@ export class ChartService {
 
     insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
         const currentBlock: Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
-        const blockIndex: number = currentBlock.parent.children.findIndex((element) => element.id === currentBlock.id);
-        const newBlock: Block = new Block(currentBlock.parent, "Block", uuidv4());
+        const blockIndex: number = currentBlock.chart.children.findIndex((element) => element.id === currentBlock.id);
+        const newBlock: Block = new Block(currentBlock.chart, "Block", uuidv4());
         const newLine: Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
         const newLineIndex: number = newLine.parent.children.findIndex((element) => element.id === newLine.id);
-        currentBlock.parent.children.splice(blockIndex + 1, 0, newBlock);
+        currentBlock.chart.children.splice(blockIndex + 1, 0, newBlock);
         newBlock.children = currentBlock.children.splice(newLineIndex);
 
         for (let line of newBlock.children) {
             line.parent = newBlock;
-            for (let lineElement of line.children) {
-                lineElement.parent = line;
-                lineElement.lyricSegment.parent = lineElement;
-                lineElement.chordSymbol.parent = lineElement;
+            for (let grandchild of line.children) {
+                grandchild.parent = line;
+                grandchild.lyricSegment.parent = grandchild;
+                grandchild.chordSymbol.parent = grandchild;
             }
         }
         return newBlock;
@@ -251,8 +251,8 @@ export class ChartService {
     
 
     public deleteBlock(target:Block){
-        const targetIndex:number = target.parent.children.findIndex((element) => element.id === target.id)
-        target.parent.children.splice(targetIndex, 1);
+        const targetIndex:number = target.chart.children.findIndex((element) => element.id === target.id)
+        target.chart.children.splice(targetIndex, 1);
     }
 
     /**

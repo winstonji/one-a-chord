@@ -38,20 +38,4 @@ export class Line implements Identifiable{
         }
         return null;
     }
-
-    getFirstInBlock = function(): Line{
-        return this.parent.getStart();
-    }
-
-    getLastInBlock = function(): Line{
-        return this.parent.getEnd();
-    }
-
-    getStart = function(): LineElement {
-        return this.children[0];
-    }
-
-    getEnd = function(): LineElement{
-        return this.children[this.children.length - 1];
-    }
 }

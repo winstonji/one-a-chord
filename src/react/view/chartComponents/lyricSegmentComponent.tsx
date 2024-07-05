@@ -1,9 +1,10 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
-import { getCursorPos } from '../../utils/selectionUtil';
 import { ChartService } from '../../services/chartService';
 import { Block } from '../../model/block';
+import { FocusFinder } from '../../utils/focusFinderUtils';
+import { SelectionUtil } from '../../utils/selectionUtil';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
@@ -22,12 +23,7 @@ function LyricSegmentComponent(lineElement: LineElement) {
                 
                 const textNode = editableRef.current.childNodes[0];
                 if (textNode) {
-                    const selection: Selection = window.getSelection();
-                    const updatedPosition: Range = document.createRange();
-                    updatedPosition.setStart(textNode, currentFocus.position);
-                    updatedPosition.setEnd(textNode, currentFocus.position);
-                    selection.removeAllRanges();
-                    selection.addRange(updatedPosition);
+                    SelectionUtil.setCursorPos(textNode, currentFocus.position);
                 }
             }
         }
@@ -42,21 +38,21 @@ function LyricSegmentComponent(lineElement: LineElement) {
                 chart: chartService.finalize(),
                 currentFocus: {
                     ...chartEditingState.currentFocus,
-                    position: getCursorPos()
+                    position: SelectionUtil.getCursorPos()
                 }
             };
         })
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        const cursorPosition = getCursorPos();
+        const cursorPosition = SelectionUtil.getCursorPos();
         const contentLength = editableRef.current.textContent.length;
         
         if (event.key === ' ' && editableRef.current) {
 
             setChartEditingState((chartEditingState) => {
                 const chartService = ChartService.with(chartEditingState.chart);
-                const newChordWrapper = chartService.splitChordWrapper(lineElement, '', cursorPosition);
+                const newChordWrapper = chartService.splitLineElement(lineElement, '', cursorPosition);
                 return {
                     chart: chartService.finalize(),
                     currentFocus: {id: newChordWrapper.lyricSegment.id, position: 0}
@@ -93,8 +89,6 @@ function LyricSegmentComponent(lineElement: LineElement) {
                     }
                 })
             }
-            
-            // setCurrentFocus({id: newLine.children[0].id, position: 0});
             event.preventDefault();
         } else if (event.key === 'Backspace' && cursorPosition === 0) {
             event.preventDefault();
@@ -184,39 +178,39 @@ function LyricSegmentComponent(lineElement: LineElement) {
         } else if (event.key === 'ArrowUp') {
             let newFocus:LineElement
             if (event.ctrlKey) {
-                newFocus = lineElement.getFirstInBlock();
+                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS');
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
                 }
                 event.preventDefault();
                 return;
             }
-            newFocus = lineElement.jumpUp();
+            newFocus = FocusFinder.focusUpFrom(lineElement);
             if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
             let newFocus:LineElement;
             if (event.ctrlKey) {
-                newFocus = lineElement.getLastInBlock();
+                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT');
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
                 }
                 event.preventDefault();
                 return;
             }
-            newFocus = lineElement.jumpDown();
+            newFocus = FocusFinder.focusDownFrom(lineElement);
             if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
+                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
             }
             event.preventDefault();
         } else if (event.code === 'Home') {
             let newFocus:LineElement;
             if (event.ctrlKey) {
-                newFocus = lineElement.parent.parent.getFirst().getStart().getStart();
+                newFocus = FocusFinder.focusChartStart(chartEditingState.chart);
             } else {
-                newFocus = lineElement.parent.getStart();
+                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'PREVIOUS_BOUNDED');
             }
             if (newFocus) {
                 setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
@@ -224,9 +218,9 @@ function LyricSegmentComponent(lineElement: LineElement) {
         } else if (event.code === 'End') {
             let newFocus:LineElement;
             if (event.ctrlKey) {
-                newFocus = lineElement.parent.parent.getLast().getEnd().getEnd();
+                newFocus = FocusFinder.focusChartEnd(chartEditingState.chart);
             } else {
-                newFocus = lineElement.parent.getEnd();
+                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'NEXT_BOUNDED');
             }
             if (newFocus) {
                 setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
@@ -244,11 +238,8 @@ function LyricSegmentComponent(lineElement: LineElement) {
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
-        setCurrentFocus({id: lineElement.lyricSegment.id, position: getCursorPos()});
-        console.log(`lyric: ${lineElement.lyricSegment.lyric}`);
-        console.log(`previous: ${lineElement.getPrevious().id}`);
-        console.log(`current:  ${lineElement.id}`);
-        console.log(`next:     ${lineElement.getNext().id}\nbreak`);
+        console.log(lineElement.id);
+        setCurrentFocus({id: lineElement.lyricSegment.id, position: SelectionUtil.getCursorPos()});
     }
       
     return (

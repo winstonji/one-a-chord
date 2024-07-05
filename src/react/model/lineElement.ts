@@ -41,40 +41,4 @@ export class LineElement implements Identifiable{
         }
         return null;
     }
-
-    getFirstInBlock = function(): LineElement{
-        const firstLine:Line = this.parent.getFirstInBlock();
-        const firstInBlock = firstLine.getStart();
-        if (this.id === firstInBlock.id) {
-            return this.getPrevious();
-        }
-        return firstInBlock;
-    }
-
-    getLastInBlock = function(): LineElement{
-        const lastLine:Line = this.parent.getLastInBlock();
-        const lastInBlock:LineElement = lastLine.getEnd();
-        if (this.id === lastInBlock.id) {
-            return this.getNext();
-        }
-        return lastInBlock;
-    }
-
-    jumpUp = function(): LineElement{
-        return this.jumpLine(-1);
-    }
-
-    jumpDown = function(): LineElement{
-        return this.jumpLine(1);
-    }
-
-    jumpLine = function(direction: -1 | 1): LineElement {
-        const currentLine: Line = this.parent;
-        const currentIndex: number = currentLine.children.findIndex(cw => cw.id === this.id);
-        const nextLine = currentLine.getNeighbor(direction);
-        if (currentIndex >= nextLine.children.length) {
-            return nextLine.children[nextLine.children.length - 1];
-        }
-        return nextLine.children[currentIndex];
-    }
 }

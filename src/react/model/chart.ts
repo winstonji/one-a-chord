@@ -3,11 +3,10 @@ import { ChartMetaData } from "./chartMetaData";
 import { Identifiable } from "./interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 
-export class Chart implements Identifiable{
+export class Chart {
     
     public metaData: ChartMetaData;
     public children?:Block[];
-    public id: string = uuidv4();
 
     constructor(){}
 }

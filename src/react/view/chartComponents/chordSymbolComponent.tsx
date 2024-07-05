@@ -2,8 +2,9 @@ import React, { useContext, useRef, useEffect } from 'react'
 import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
-import { getCursorPos } from '../../utils/selectionUtil';
+import { SelectionUtil } from '../../utils/selectionUtil';
 import { ChordSymbol } from '../../model/chordSymbol';
+import { FocusFinder } from '../../utils/focusFinderUtils';
 
 function ChordSymbolComponent(lineElement: LineElement) {
 
@@ -24,19 +25,14 @@ function ChordSymbolComponent(lineElement: LineElement) {
             
             const textNode = editableRef.current.childNodes[0];
             if (textNode) {
-                const selection: Selection = window.getSelection();
-                const updatedPosition: Range = document.createRange();
-                updatedPosition.setStart(textNode, currentFocus.position);
-                updatedPosition.setEnd(textNode, currentFocus.position);
-                selection.removeAllRanges();
-                selection.addRange(updatedPosition);
+               SelectionUtil.setCursorPos(textNode, currentFocus.position);
             }
         }
     });
 
     const updateChordSymbol = (updatedSymbol: string) => {
         // Save the cursor position before updating the state
-        const cursorPosition = getCursorPos();
+        const cursorPosition = SelectionUtil.getCursorPos();
 
         setChartEditingState((chartEditingState) => {
             const chartService = ChartService.with(chartEditingState.chart);
@@ -46,14 +42,14 @@ function ChordSymbolComponent(lineElement: LineElement) {
                 chart: chartService.finalize(),
                 currentFocus: {
                     ...chartEditingState.currentFocus,
-                    position: getCursorPos()
+                    position: SelectionUtil.getCursorPos()
                 }
             };
         })
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        const cursorPosition = getCursorPos();
+        const cursorPosition = SelectionUtil.getCursorPos();
         const contentLength = editableRef.current.textContent.length;
         if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             const newFocus = lineElement.getNext();
@@ -71,28 +67,28 @@ function ChordSymbolComponent(lineElement: LineElement) {
                 event.preventDefault();
         } else if (event.key === 'ArrowUp') {
             if (event.ctrlKey) {
-                const newFocus:LineElement = lineElement.getFirstInBlock();
+                const newFocus:LineElement = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS_BOUNDED');
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length})
                 }
                 event.preventDefault();
                 return;
             }
-            const nextChordWrapper = lineElement.jumpUp();
+            const nextChordWrapper = FocusFinder.focusUpFrom(lineElement);
             if (nextChordWrapper) {
                 setCurrentFocus({id: nextChordWrapper.chordSymbol.id, position: 0});
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
             if (event.ctrlKey) {
-                const newFocus:LineElement = lineElement.getLastInBlock();
+                const newFocus:LineElement = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT_BOUNDED');
                 if (newFocus) {
                     setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length})
                 }
                 event.preventDefault();
                 return;
             }
-            const nextChordWrapper = lineElement.jumpDown();
+            const nextChordWrapper = FocusFinder.focusDownFrom(lineElement);
             if (nextChordWrapper) {
                 setCurrentFocus({id: nextChordWrapper.chordSymbol.id, position: 0});
             }
@@ -109,7 +105,7 @@ function ChordSymbolComponent(lineElement: LineElement) {
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
-        setCurrentFocus({id: lineElement.chordSymbol.id, position: getCursorPos()});
+        setCurrentFocus({id: lineElement.chordSymbol.id, position: SelectionUtil.getCursorPos()});
         console.log(lineElement.id);
     }
 
