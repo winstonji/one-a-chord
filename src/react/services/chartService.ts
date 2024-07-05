@@ -78,6 +78,10 @@ export class ChartService {
         } = this.getDataForNewLineCreation(lineElement);
 
         secondLine.children = [...firstLine.children.slice(chordWrapperIndex)];
+        for (let child of secondLine.children) {
+            child.parent = secondLine;
+        }
+
         block.children.splice(lineIndex + 1, 0, secondLine);
         firstLine.children = firstLine.children.slice(0, chordWrapperIndex);
         return secondLine;
