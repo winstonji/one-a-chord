@@ -25,6 +25,9 @@ export function handleLineElementKeyDown(
     } else if (event.code === 'End') {
         return handleEndKey(event, chartEditingState.chart, lineElement);
     }
+    else{
+        return {...chartEditingState.currentFocus}
+    }
 }
 
 function handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
@@ -37,7 +40,7 @@ function handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
 
 function handleArrowLeft(event:React.KeyboardEvent, lineElement:LineElement){
     event.preventDefault();
-    const newFocus = lineElement.getNext();
+    const newFocus = lineElement.getPrevious();
     if (newFocus) {
         return{id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length};
     }
