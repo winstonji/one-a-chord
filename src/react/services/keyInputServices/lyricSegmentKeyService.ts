@@ -3,8 +3,12 @@ import { ChartEditingState } from "../../view/types/chartContext";
 import { LineElement } from "../../model/lineElement";
 import { Chart } from "../../model/chart";
 import { Block } from "../../model/block";
-import { Line } from "../../model/line";
 import { handleLineElementKeyDown } from "./lineElementKeyService";
+
+export interface LyricSegmentKeyServiceResult{
+    updated: boolean,
+    chartEditingState?: ChartEditingState
+}
 
 export function handleLyricSegmentKeyDown(
     event: React.KeyboardEvent,
@@ -12,52 +16,67 @@ export function handleLyricSegmentKeyDown(
     lineElement: LineElement,
     cursorPosition: number,
     contentLength: number
-): ChartEditingState{
+): LyricSegmentKeyServiceResult{
+
+    let updateResult
+    ;
     if (event.key === ' ') {
-        return handleSpace(
+        updateResult = handleSpace(
             event,
             chartEditingState.chart,
             lineElement,
             cursorPosition
         );
     } else if (event.key === 'Enter') {
-        return handleEnter(
+        updateResult = handleEnter(
             event,
             chartEditingState.chart,
             lineElement,
             cursorPosition
         );
     } else if (event.key === 'Backspace' && cursorPosition === 0) {
-        return handleBackspace(
+        updateResult = handleBackspace(
             event,
             chartEditingState.chart,
             lineElement
         );
     } else if (event.key === 'Delete' && cursorPosition === contentLength) {
-        return handleDelete(
+        updateResult = handleDelete(
             event,
             chartEditingState,
             lineElement,
             contentLength
         );
     } else if (event.ctrlKey && event.code === 'KeyK') {
-        return {
+        updateResult = {
             chart: {...chartEditingState.chart},
             currentFocus: handleEditFocus(event, lineElement)
         }
     } else {
-        return {
-            chart: {...chartEditingState.chart},
-            currentFocus: handleLineElementKeyDown(
+        const result = handleLineElementKeyDown(
                 event,
                 chartEditingState,
                 lineElement,
                 cursorPosition,
                 contentLength
-            )
+            );
+
+        if(result.updated){
+            updateResult = {
+                chart: {...chartEditingState.chart},
+                currentFocus: result.focus!
+            }
+        }
+    }
+
+    if(updateResult){
+        return {
+            updated: true,
+            chartEditingState: {...updateResult}
         }
     }
     
+    return {updated: false}
 }
 
 function handleSpace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
@@ -162,7 +181,6 @@ function handleDelete(event:React.KeyboardEvent, chartEditingState:ChartEditingS
 function handleEditFocus(event:React.KeyboardEvent, lineElement:LineElement){
     event.preventDefault();
     const chordSymbol = lineElement.chordSymbol;
-    console.log(`id: ${chordSymbol.id}`);
     return {
         id: chordSymbol.id,
         position:chordSymbol.backingString.length

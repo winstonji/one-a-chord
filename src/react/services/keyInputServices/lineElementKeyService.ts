@@ -1,9 +1,13 @@
 import { Chart } from "../../model/chart";
-import { Line } from "../../model/line";
 import { LineElement } from "../../model/lineElement";
 import { FocusFinder } from "../../utils/focusFinderUtils";
 import { ChartEditingState } from "../../view/types/chartContext";
 import { CurrentFocus } from "../../view/types/currentFocus";
+
+export interface LineElementKeyDownResult{
+    updated: boolean,
+    focus?: CurrentFocus
+}
 
 export function handleLineElementKeyDown(
     event: React.KeyboardEvent,
@@ -11,23 +15,31 @@ export function handleLineElementKeyDown(
     lineElement: LineElement,
     cursorPosition: number,
     contentLength: number
-): CurrentFocus {
+): LineElementKeyDownResult {
+    
+    let updatedFocus;
     if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
-        return handleArrowRight(event, lineElement);
+        updatedFocus = handleArrowRight(event, lineElement);
     } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
-        return handleArrowLeft(event, lineElement);
+        updatedFocus = handleArrowLeft(event, lineElement);
     } else if (event.key === 'ArrowUp') {
-        return handleArrowUp(event, lineElement);
+        updatedFocus = handleArrowUp(event, lineElement);
     } else if (event.key === 'ArrowDown') {
-        return handleArrowDown(event, lineElement);
+        updatedFocus = handleArrowDown(event, lineElement);
     } else if (event.code === 'Home') {
-        return handleHomeKey(event, chartEditingState.chart, lineElement);
+        updatedFocus = handleHomeKey(event, chartEditingState.chart, lineElement);
     } else if (event.code === 'End') {
-        return handleEndKey(event, chartEditingState.chart, lineElement);
+        updatedFocus = handleEndKey(event, chartEditingState.chart, lineElement);
     }
-    else{
-        return {...chartEditingState.currentFocus}
+    
+    if(updatedFocus){
+        return {
+            updated: true,
+            focus: updatedFocus
+        }
     }
+
+    return {updated: false}
 }
 
 function handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
