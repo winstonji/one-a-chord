@@ -5,6 +5,7 @@ import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
 import { ChordSymbol } from '../../model/chordSymbol';
 import { FocusFinder } from '../../utils/focusFinderUtils';
+import { handleChordSymbolKeyDown } from '../../services/keyInputServices/chordSymbolKeyService';
 
 function ChordSymbolComponent(lineElement: LineElement) {
 
@@ -50,56 +51,23 @@ function ChordSymbolComponent(lineElement: LineElement) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = SelectionUtil.getCursorPos();
-        const contentLength = editableRef.current.textContent.length;
-        if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
-            const newFocus = lineElement.getNext();
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length});
-                event.preventDefault();
+        const contentLength = editableRef.current.textContent.length;    
+
+        setChartEditingState((chartEditingState) => {
+            const updateResult = handleChordSymbolKeyDown(event,
+                                             chartEditingState,
+                                             lineElement,
+                                             cursorPosition,
+                                             contentLength
+                                        );
+
+            //Only update the react state if the focus or the chart contents (or both) changed. Otherwise there is no reason to re-render.
+            if(updateResult.updated){
+                return updateResult.chartEditingState
             }
-        } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
-            const newFocus = lineElement.getPrevious();
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length});
-            } else {
-                setCurrentFocus({id: lineElement.chordSymbol.id, position: 0});
-            }
-                event.preventDefault();
-        } else if (event.key === 'ArrowUp') {
-            if (event.ctrlKey) {
-                const newFocus:LineElement = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS_BOUNDED');
-                if (newFocus) {
-                    setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length})
-                }
-                event.preventDefault();
-                return;
-            }
-            const nextChordWrapper = FocusFinder.focusUpFrom(lineElement);
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.chordSymbol.id, position: 0});
-            }
-            event.preventDefault();
-        } else if (event.key === 'ArrowDown') {
-            if (event.ctrlKey) {
-                const newFocus:LineElement = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT_BOUNDED');
-                if (newFocus) {
-                    setCurrentFocus({id: newFocus.chordSymbol.id, position: newFocus.chordSymbol.backingString.length})
-                }
-                event.preventDefault();
-                return;
-            }
-            const nextChordWrapper = FocusFinder.focusDownFrom(lineElement);
-            if (nextChordWrapper) {
-                setCurrentFocus({id: nextChordWrapper.chordSymbol.id, position: 0});
-            }
-            event.preventDefault();
-        } else if (event.ctrlKey && event.code === 'KeyL') {
-            event.preventDefault();
-            const lyricSegment = lineElement.lyricSegment;
-            console.log(`id: ${lyricSegment.id}`);
-            setCurrentFocus({id: lyricSegment.id, position: lyricSegment.lyric.length});
-        }
-        
+
+            return chartEditingState;
+        });
     };
     
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.

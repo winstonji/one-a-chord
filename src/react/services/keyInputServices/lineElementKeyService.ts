@@ -1,4 +1,5 @@
 import { Chart } from "../../model/chart";
+import { Line } from "../../model/line";
 import { LineElement } from "../../model/lineElement";
 import { FocusFinder } from "../../utils/focusFinderUtils";
 import { ChartEditingState } from "../../view/types/chartContext";
@@ -9,111 +10,127 @@ export interface LineElementKeyDownResult{
     focus?: CurrentFocus
 }
 
-export function handleLineElementKeyDown(
-    event: React.KeyboardEvent,
-    chartEditingState: ChartEditingState,
-    lineElement: LineElement,
-    cursorPosition: number,
-    contentLength: number
-): LineElementKeyDownResult {
+type LineEditMode = 'CHORD' | 'LYRIC'
+
+export class LineElementKeyService {
+
+    private editMode:LineEditMode;
+
+    constructor(mode:LineEditMode){
+        this.editMode = mode;
+    }
+
+    public handleLineElementKeyDown(
+        event: React.KeyboardEvent,
+        chartEditingState: ChartEditingState,
+        lineElement: LineElement,
+        cursorPosition: number,
+        contentLength: number
+    ): LineElementKeyDownResult {
+        
+        let updatedFocus;
+        if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
+            updatedFocus = this.handleArrowRight(event, lineElement);
+        } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
+            updatedFocus = this.handleArrowLeft(event, lineElement);
+        } else if (event.key === 'ArrowUp') {
+            updatedFocus = this.handleArrowUp(event, lineElement);
+        } else if (event.key === 'ArrowDown') {
+            updatedFocus = this.handleArrowDown(event, lineElement);
+        } else if (event.code === 'Home') {
+            updatedFocus = this.handleHomeKey(event, chartEditingState.chart, lineElement);
+        } else if (event.code === 'End') {
+            updatedFocus = this.handleEndKey(event, chartEditingState.chart, lineElement);
+        }
+        
+        if(updatedFocus){
+            return {
+                updated: true,
+                focus: updatedFocus
+            }
+        }
     
-    let updatedFocus;
-    if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
-        updatedFocus = handleArrowRight(event, lineElement);
-    } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
-        updatedFocus = handleArrowLeft(event, lineElement);
-    } else if (event.key === 'ArrowUp') {
-        updatedFocus = handleArrowUp(event, lineElement);
-    } else if (event.key === 'ArrowDown') {
-        updatedFocus = handleArrowDown(event, lineElement);
-    } else if (event.code === 'Home') {
-        updatedFocus = handleHomeKey(event, chartEditingState.chart, lineElement);
-    } else if (event.code === 'End') {
-        updatedFocus = handleEndKey(event, chartEditingState.chart, lineElement);
+        return {updated: false}
     }
     
-    if(updatedFocus){
-        return {
-            updated: true,
-            focus: updatedFocus
+    private handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
+        event.preventDefault();
+        const newFocus = lineElement.getNext();
+        if (newFocus) {
+            return{...this.discernFocus(this.editMode, newFocus), position: 0};
+        }
+    }
+    
+    private handleArrowLeft(event:React.KeyboardEvent, lineElement:LineElement){
+        event.preventDefault();
+        const newFocus = lineElement.getPrevious();
+        if (newFocus) {
+            return{...this.discernFocus(this.editMode, newFocus)};
+        }
+    }
+    
+    private handleArrowUp(event:React.KeyboardEvent, lineElement:LineElement){
+        event.preventDefault();
+        let newFocus:LineElement
+        if (event.ctrlKey) {
+            newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS');
+        } else {
+            newFocus = FocusFinder.focusUpFrom(lineElement);
+        }
+    
+        return {...this.discernFocus(this.editMode, newFocus)}
+    }
+    
+    private handleArrowDown(event:React.KeyboardEvent, lineElement:LineElement){
+        event.preventDefault();
+        let newFocus:LineElement
+        if (event.ctrlKey) {
+            newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT');
+        } else {
+            newFocus = FocusFinder.focusDownFrom(lineElement);
+        }
+    
+        return {...this.discernFocus(this.editMode, newFocus)}
+    }
+    
+    private handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+        let newFocus:LineElement;
+        if (event.ctrlKey) {
+            newFocus = FocusFinder.focusChartStart(chart);
+        } else {
+            newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'PREVIOUS_BOUNDED');
+        }
+        if (newFocus) {
+            return {
+                ...this.discernFocus(this.editMode, newFocus),
+                position: 0
+            }
+        }
+    }
+    
+    private handleEndKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+        let newFocus:LineElement;
+        if (event.ctrlKey) {
+            newFocus = FocusFinder.focusChartEnd(chart);
+        } else {
+            newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'NEXT_BOUNDED');
+        }
+        if (newFocus) {
+            return{...this.discernFocus(this.editMode, newFocus)}
         }
     }
 
-    return {updated: false}
-}
-
-function handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
-    event.preventDefault();
-    const newFocus = lineElement.getNext();
-    if (newFocus) {
-        return{id: newFocus.lyricSegment.id, position: 0};
-    }
-}
-
-function handleArrowLeft(event:React.KeyboardEvent, lineElement:LineElement){
-    event.preventDefault();
-    const newFocus = lineElement.getPrevious();
-    if (newFocus) {
-        return{id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length};
-    }
-}
-
-function handleArrowUp(event:React.KeyboardEvent, lineElement:LineElement){
-    event.preventDefault();
-    let newFocus:LineElement
-    if (event.ctrlKey) {
-        newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS');
-    } else {
-        newFocus = FocusFinder.focusUpFrom(lineElement);
-    }
-
-    return {
-        id: newFocus.lyricSegment.id,
-        position: newFocus.lyricSegment.lyric.length
-    }
-}
-
-function handleArrowDown(event:React.KeyboardEvent, lineElement:LineElement){
-    event.preventDefault();
-    let newFocus:LineElement
-    if (event.ctrlKey) {
-        newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT');
-    } else {
-        newFocus = FocusFinder.focusDownFrom(lineElement);
-    }
-
-    return {
-        id: newFocus.lyricSegment.id,
-        position: newFocus.lyricSegment.lyric.length
-    }
-}
-
-function handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
-    let newFocus:LineElement;
-    if (event.ctrlKey) {
-        newFocus = FocusFinder.focusChartStart(chart);
-    } else {
-        newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'PREVIOUS_BOUNDED');
-    }
-    if (newFocus) {
-        return {
-            id: newFocus.lyricSegment.id,
-            position: 0
-        }
-    }
-}
-
-function handleEndKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
-    let newFocus:LineElement;
-    if (event.ctrlKey) {
-        newFocus = FocusFinder.focusChartEnd(chart);
-    } else {
-        newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'NEXT_BOUNDED');
-    }
-    if (newFocus) {
-        return{
-            id: newFocus.lyricSegment.id,
-            position: newFocus.lyricSegment.lyric.length
+    private discernFocus(mode:LineEditMode, lineElement:LineElement){
+        if (mode === 'CHORD') {
+            return {
+                id: lineElement.chordSymbol.id,
+                position: lineElement.chordSymbol.backingString.length
+            }
+        } else if (mode === 'LYRIC') {
+            return {
+                id: lineElement.lyricSegment.id,
+                position: lineElement.lyricSegment.lyric.length
+            }
         }
     }
 }

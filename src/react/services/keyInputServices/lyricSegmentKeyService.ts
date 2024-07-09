@@ -3,7 +3,7 @@ import { ChartEditingState } from "../../view/types/chartContext";
 import { LineElement } from "../../model/lineElement";
 import { Chart } from "../../model/chart";
 import { Block } from "../../model/block";
-import { handleLineElementKeyDown } from "./lineElementKeyService";
+import { LineElementKeyService } from "./lineElementKeyService";
 
 export interface LyricSegmentKeyServiceResult{
     updated: boolean,
@@ -18,8 +18,8 @@ export function handleLyricSegmentKeyDown(
     contentLength: number
 ): LyricSegmentKeyServiceResult{
 
-    let updateResult
-    ;
+    let updateResult;
+    
     if (event.key === ' ') {
         updateResult = handleSpace(
             event,
@@ -53,7 +53,8 @@ export function handleLyricSegmentKeyDown(
             currentFocus: handleEditFocus(event, lineElement)
         }
     } else {
-        const result = handleLineElementKeyDown(
+        const lineElementKeyService = new LineElementKeyService('LYRIC');
+        const result = lineElementKeyService.handleLineElementKeyDown(
                 event,
                 chartEditingState,
                 lineElement,
