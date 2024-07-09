@@ -5,4 +5,7 @@
 h3.oac-block-header{
     margin: 0px;
     font-style: italic;
+    &:focus{
+        outline: none;
+    }
 }

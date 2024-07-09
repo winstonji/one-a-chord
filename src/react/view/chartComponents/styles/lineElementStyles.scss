@@ -2,7 +2,7 @@
     margin: 0em 0em 0.2em 1em;
 }
 
-.oac-chord-wrapper{
+.oac-line-element{
     margin: 0em;
     &:focus{
         border: 1px solid lightgray;
@@ -20,7 +20,6 @@
 
 .oac-lyric-segment{
     margin: 0em 0.3em;
-    
     &:focus{
         outline: none;
     }

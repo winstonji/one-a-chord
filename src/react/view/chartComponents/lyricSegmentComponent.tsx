@@ -2,9 +2,8 @@ import React, { useContext, useRef, useEffect } from 'react';
 import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
-import { Block } from '../../model/block';
-import { FocusFinder } from '../../utils/focusFinderUtils';
 import { SelectionUtil } from '../../utils/selectionUtil';
+import { LyricSegmentKeyService } from '../../services/keyInputServices/lyricSegmentKeyService';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
@@ -46,192 +45,24 @@ function LyricSegmentComponent(lineElement: LineElement) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = SelectionUtil.getCursorPos();
-        const contentLength = editableRef.current.textContent.length;
-        
-        if (event.key === ' ' && editableRef.current) {
+        const contentLength = editableRef.current.textContent.length;    
 
-            setChartEditingState((chartEditingState) => {
-                const chartService = ChartService.with(chartEditingState.chart);
-                const newChordWrapper = chartService.splitLineElement(lineElement, '', cursorPosition);
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {id: newChordWrapper.lyricSegment.id, position: 0}
-                }
-            });
-            
-            // Prevent the space from being added
-            event.preventDefault();
+        setChartEditingState((chartEditingState) => {
+            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState);
+            const updateResult = lyricSegmentKeyService.handleLyricSegmentKeyDown(
+                                             event,
+                                             lineElement,
+                                             cursorPosition,
+                                             contentLength
+                                        );
 
-        } else if (event.key === 'Enter' && editableRef.current) {
-            if (event.ctrlKey) {
-                setChartEditingState((chartEditingState) => {
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    const newBlock:Block = chartService.insertNewBlockAfter(lineElement, cursorPosition);
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: newBlock.children[0].children[0].lyricSegment.id,
-                            position: 0
-                        }
-                    }
-                })
-            } else {
-                setChartEditingState((chartEditingState) => {
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    const newLine = chartService.insertNewLineAfter(lineElement, cursorPosition);
-    
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: newLine.children[0].lyricSegment.id,
-                            position: 0
-                        }
-                    }
-                })
+            //Only update the react state if the focus or the chart contents (or both) changed. Otherwise there is no reason to re-render.
+            if(updateResult.updated){
+                return updateResult.chartEditingState
             }
-            event.preventDefault();
-        } else if (event.key === 'Backspace' && cursorPosition === 0) {
-            event.preventDefault();
-            if (event.ctrlKey) {
-                setChartEditingState((chartEditingState) => {
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.deletePrevious(lineElement);
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: lineElement.lyricSegment.id,
-                            position: 0
-                        }
-                    }
-                })
-                return;
-            } else if (lineElement.getPrevious() !== null){
-                setChartEditingState((chartEditingState) => {
-                    const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
-                    const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
-                    if (lineElementIndex === 0) {
-                        return {
-                            chart: chartService.finalize(),
-                            currentFocus: {
-                                id: newFocus.lyricSegment.id,
-                                position: 0
-                            }
-                        }
-                    } else {
-                        return {
-                            chart: chartService.finalize(),
-                            currentFocus: {
-                                id: newFocus.lyricSegment.id,
-                                position: cursorPositionAfterMerge
-                            }
-                        }
-                    }
-                });
-            }
-        } else if (event.key === 'Delete' && cursorPosition === contentLength) {
-            event.preventDefault();
-            if (event.ctrlKey) {
-                setChartEditingState((chartEditingState) => {
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.deleteNext(lineElement);
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            id: lineElement.lyricSegment.id,
-                            position: contentLength
-                        }
-                    }
-                })
-            } else {
-                setChartEditingState((chartEditingState) => {
-                    const chartService = ChartService.with(chartEditingState.chart);
-                    chartService.mergeLineElement(lineElement, 1);
-    
-                    setCurrentFocus({})
-                    return {
-                        chart: chartService.finalize(),
-                        currentFocus: {
-                            ...chartEditingState.currentFocus,
-                            position: contentLength
-                        }
-                    }
-                });
-            }
-        } else if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
-            const newFocus = lineElement.getNext();
-            if (newFocus) {
-                if (event.ctrlKey) {
-                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
-                } else {
-                    setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
-                }
-                event.preventDefault();
-            }
-        } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
-            const newFocus = lineElement.getPrevious();
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
-                event.preventDefault();
-            } 
-        } else if (event.key === 'ArrowUp') {
-            let newFocus:LineElement
-            if (event.ctrlKey) {
-                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'PREVIOUS');
-                if (newFocus) {
-                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
-                }
-                event.preventDefault();
-                return;
-            }
-            newFocus = FocusFinder.focusUpFrom(lineElement);
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
-            }
-            event.preventDefault();
-        } else if (event.key === 'ArrowDown') {
-            let newFocus:LineElement;
-            if (event.ctrlKey) {
-                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent.parent, 'NEXT');
-                if (newFocus) {
-                    setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length})
-                }
-                event.preventDefault();
-                return;
-            }
-            newFocus = FocusFinder.focusDownFrom(lineElement);
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
-            }
-            event.preventDefault();
-        } else if (event.code === 'Home') {
-            let newFocus:LineElement;
-            if (event.ctrlKey) {
-                newFocus = FocusFinder.focusChartStart(chartEditingState.chart);
-            } else {
-                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'PREVIOUS_BOUNDED');
-            }
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: 0});
-            }
-        } else if (event.code === 'End') {
-            let newFocus:LineElement;
-            if (event.ctrlKey) {
-                newFocus = FocusFinder.focusChartEnd(chartEditingState.chart);
-            } else {
-                newFocus = FocusFinder.focusBoundExtremity(lineElement, lineElement.parent, 'NEXT_BOUNDED');
-            }
-            if (newFocus) {
-                setCurrentFocus({id: newFocus.lyricSegment.id, position: newFocus.lyricSegment.lyric.length});
-            }
-        } else if (event.ctrlKey && event.code === 'KeyK') {
-            event.preventDefault();
-            const chordSymbol = lineElement.chordSymbol;
-            console.log(`id: ${chordSymbol.id}`);
-            setCurrentFocus({id: chordSymbol.id, position:chordSymbol.backingString.length});
-        }
-        
+
+            return chartEditingState;
+        });
     };
     
 
@@ -250,6 +81,7 @@ function LyricSegmentComponent(lineElement: LineElement) {
             onClick={handleFocusViaClick}
             onKeyDown={handleKeyDown}
             onInput={(event) => updateLyric(event.currentTarget.textContent || '')}
+            tabIndex={-1}
         >
         </div>
     );
