@@ -34,7 +34,7 @@ function BlockComponent (block:Block){
 	const updateHeader = (updatedHeader:string) => {
 		setChartEditingState((chartEditingState) => {
             const chartService = ChartService.with(chartEditingState.chart);
-            chartService.updateHeader(block, updatedHeader);
+            chartService.updateBlockHeader(block, updatedHeader);
         
             return {
                 chart: chartService.finalize(),

@@ -1,14 +1,16 @@
 import React, { useEffect, useState} from 'react'
-import { ChartMetaData } from '../../model/chartMetaData';
-import "./styles/chartMetaDataStyles.scss"
+import "../styles/chartMetaDataStyles.scss"
+import { ChartMetaData } from '../../../model/chartMetaData';
+import TitleComponenent from './titleComponent';
+import KeyComponent from './keyComponent';
 
 
-function ChartMetaDataComponent(chartMetaData:ChartMetaData){
+function ChartMetaDataComponent(chartMetaData: ChartMetaData){
 
 	return (<div className='oac-col oac-row-align-top'>
-		<h1 className='oac-title'>{chartMetaData.title}</h1>
+		<TitleComponenent title = {chartMetaData.title}/>
 		<div className='oac-row'>
-			<p className='oac-metadata'>Key - {chartMetaData?.keyValue?.printName ?? ''}</p>
+			<KeyComponent keySig={chartMetaData?.keyValue?.printName ?? ''}/>
 			<p>Time - </p>
 			<div className='oac-col oac-metadata'>
 				<p className='oac-time-signature'>{chartMetaData.signatureTop}</p>

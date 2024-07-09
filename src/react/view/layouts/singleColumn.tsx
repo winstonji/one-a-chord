@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ChartContext } from '../programWindow';
-import ChartMetaDataComponent from '../chartComponents/chartMetaDataComponent';
 import { ChartMetaData } from '../../model/chartMetaData';
 import { Block } from '../../model/block';
 import BlockComponent from '../chartComponents/blockComponent';
+import ChartMetaDataComponent from '../chartComponents/metadata/chartMetaDataComponent';
 
 function SingleColumn(){
     const {chartEditingState} = useContext(ChartContext);
