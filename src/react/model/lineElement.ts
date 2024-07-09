@@ -25,6 +25,22 @@ export class LineElement implements Identifiable{
         return this.getNeighbor(-1);
     }
 
+    getNextWithChord = function(): LineElement{
+        let lineElement = this.getNext();
+        while (lineElement.chordSymbol.backingString === '') {
+            lineElement = lineElement.getNext();
+        }
+        return lineElement;
+    }
+
+    getPreviousWithChord = function(): LineElement{
+        let lineElement = this.getPrevious();
+        while (lineElement.chordSymbol.backingString === '') {
+            lineElement = lineElement.getPrevious();
+        }
+        return lineElement;
+    }
+
     getNeighbor = function(direction: 1 | -1): LineElement{
         const line:Line = this.parent;
         const currentIndex:number = line.children.findIndex(le => le.id === this.id);

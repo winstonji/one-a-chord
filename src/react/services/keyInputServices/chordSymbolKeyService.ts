@@ -17,7 +17,13 @@ export function handleChordSymbolKeyDown(
     
     let updateResult;
 
-    if (event.ctrlKey && event.code === 'KeyL') {
+    if (event.key === 'Tab') {
+        updateResult = {
+            chart: {...chartEditingState.chart},
+            currentFocus: handleTab(event, lineElement)
+        }
+    }
+    else if (event.ctrlKey && event.code === 'KeyL') {
         updateResult = {
             chart: {...chartEditingState.chart},
             currentFocus: handleEditFocus(event, lineElement)
@@ -48,6 +54,24 @@ export function handleChordSymbolKeyDown(
     }
 
     return {updated: false}
+}
+
+function handleTab(event:React.KeyboardEvent, lineElement:LineElement){
+    event.preventDefault();
+    let newFocus;
+    if (event.shiftKey) {
+        newFocus = lineElement.getPreviousWithChord();
+        return {
+            id: newFocus.chordSymbol.id,
+            position: newFocus.chordSymbol.backingString.length
+        }
+    } else {
+        newFocus = lineElement.getNextWithChord();
+        return {
+            id: newFocus.chordSymbol.id,
+            position: newFocus.chordSymbol.backingString.length
+        }
+    }
 }
 
 function handleEditFocus(event:React.KeyboardEvent, lineElement:LineElement){

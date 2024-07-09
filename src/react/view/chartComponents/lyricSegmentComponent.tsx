@@ -82,6 +82,7 @@ function LyricSegmentComponent(lineElement: LineElement) {
             onClick={handleFocusViaClick}
             onKeyDown={handleKeyDown}
             onInput={(event) => updateLyric(event.currentTarget.textContent || '')}
+            tabIndex={-1}
         >
         </div>
     );
