@@ -3,7 +3,7 @@ import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
-import { handleLyricSegmentKeyDown } from '../../services/keyInputServices/lyricSegmentKeyService';
+import { LyricSegmentKeyService } from '../../services/keyInputServices/lyricSegmentKeyService';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
@@ -48,8 +48,9 @@ function LyricSegmentComponent(lineElement: LineElement) {
         const contentLength = editableRef.current.textContent.length;    
 
         setChartEditingState((chartEditingState) => {
-            const updateResult = handleLyricSegmentKeyDown(event,
-                                             chartEditingState,
+            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState);
+            const updateResult = lyricSegmentKeyService.handleLyricSegmentKeyDown(
+                                             event,
                                              lineElement,
                                              cursorPosition,
                                              contentLength

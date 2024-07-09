@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import ChordSymbolComponent from './chordSymbolComponent';
 import LyricSegmentComponent from './lyricSegmentComponent';
 import { LineElement } from '../../model/lineElement';

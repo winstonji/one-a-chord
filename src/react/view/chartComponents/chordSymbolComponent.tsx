@@ -3,7 +3,7 @@ import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
-import { handleChordSymbolKeyDown } from '../../services/keyInputServices/chordSymbolKeyService';
+import { ChordSymbolKeyService } from '../../services/keyInputServices/chordSymbolKeyService';
 
 function ChordSymbolComponent(lineElement: LineElement) {
 
@@ -49,8 +49,9 @@ function ChordSymbolComponent(lineElement: LineElement) {
         const contentLength = editableRef.current.textContent.length;    
 
         setChartEditingState((chartEditingState) => {
-            const updateResult = handleChordSymbolKeyDown(event,
-                                             chartEditingState,
+            const chordSymbolKeyService = new ChordSymbolKeyService(chartEditingState);
+            const updateResult = chordSymbolKeyService.handleChordSymbolKeyDown(
+                                             event,
                                              lineElement,
                                              cursorPosition,
                                              contentLength

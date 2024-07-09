@@ -15,14 +15,15 @@ type LineEditMode = 'CHORD' | 'LYRIC'
 export class LineElementKeyService {
 
     private editMode:LineEditMode;
+    private chartEditingState: ChartEditingState
 
-    constructor(mode:LineEditMode){
+    constructor(mode:LineEditMode, chartEditingState: ChartEditingState){
         this.editMode = mode;
+        this.chartEditingState = chartEditingState;
     }
 
     public handleLineElementKeyDown(
         event: React.KeyboardEvent,
-        chartEditingState: ChartEditingState,
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
@@ -38,9 +39,9 @@ export class LineElementKeyService {
         } else if (event.key === 'ArrowDown') {
             updatedFocus = this.handleArrowDown(event, lineElement);
         } else if (event.code === 'Home') {
-            updatedFocus = this.handleHomeKey(event, chartEditingState.chart, lineElement);
+            updatedFocus = this.handleHomeKey(event, this.chartEditingState.chart, lineElement);
         } else if (event.code === 'End') {
-            updatedFocus = this.handleEndKey(event, chartEditingState.chart, lineElement);
+            updatedFocus = this.handleEndKey(event, this.chartEditingState.chart, lineElement);
         }
         
         if(updatedFocus){
@@ -57,7 +58,10 @@ export class LineElementKeyService {
         event.preventDefault();
         const newFocus = lineElement.getNext();
         if (newFocus) {
-            return{...this.discernFocus(this.editMode, newFocus), position: 0};
+            return{
+                ...this.discernFocus(this.editMode, newFocus), 
+                position: 0
+            };
         }
     }
     
@@ -65,7 +69,7 @@ export class LineElementKeyService {
         event.preventDefault();
         const newFocus = lineElement.getPrevious();
         if (newFocus) {
-            return{...this.discernFocus(this.editMode, newFocus)};
+            return this.discernFocus(this.editMode, newFocus);
         }
     }
     
@@ -78,7 +82,7 @@ export class LineElementKeyService {
             newFocus = FocusFinder.focusUpFrom(lineElement);
         }
     
-        return {...this.discernFocus(this.editMode, newFocus)}
+        return this.discernFocus(this.editMode, newFocus)
     }
     
     private handleArrowDown(event:React.KeyboardEvent, lineElement:LineElement){
@@ -90,7 +94,7 @@ export class LineElementKeyService {
             newFocus = FocusFinder.focusDownFrom(lineElement);
         }
     
-        return {...this.discernFocus(this.editMode, newFocus)}
+        return this.discernFocus(this.editMode, newFocus)
     }
     
     private handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
