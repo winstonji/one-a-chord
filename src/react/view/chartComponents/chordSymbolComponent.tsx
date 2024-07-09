@@ -3,8 +3,6 @@ import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
-import { ChordSymbol } from '../../model/chordSymbol';
-import { FocusFinder } from '../../utils/focusFinderUtils';
 import { handleChordSymbolKeyDown } from '../../services/keyInputServices/chordSymbolKeyService';
 
 function ChordSymbolComponent(lineElement: LineElement) {
@@ -31,10 +29,7 @@ function ChordSymbolComponent(lineElement: LineElement) {
         }
     });
 
-    const updateChordSymbol = (updatedSymbol: string) => {
-        // Save the cursor position before updating the state
-        const cursorPosition = SelectionUtil.getCursorPos();
-
+    const updateChord = (updatedSymbol: string) => {
         setChartEditingState((chartEditingState) => {
             const chartService = ChartService.with(chartEditingState.chart);
             chartService.updateChord(lineElement, updatedSymbol);
@@ -84,7 +79,7 @@ function ChordSymbolComponent(lineElement: LineElement) {
             contentEditable
             onClick={handleFocusViaClick}
             onKeyDown={handleKeyDown}
-            onInput={(event) => {updateChordSymbol(event.currentTarget.textContent || '')}}
+            onInput={(event) => {updateChord(event.currentTarget.textContent || '')}}
         >
         </div>
     );

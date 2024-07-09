@@ -285,6 +285,11 @@ export class ChartService {
         lineElementRef.chordSymbol.setChordSymbol(chordSymbolString);
     }
     
+    public updateHeader(block:Block, updatedHeader:string){
+        const blockRef: Block = this.locateElement<Block>(block, this.chart);
+        blockRef.header = updatedHeader;
+    }
+
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
     //Then, recursively get the parent of the current identifiable and repeat the process.
     //If you call this function with a ChordWrapper, for example, it will give you an array like this [block id, line id, chord wrapper id]

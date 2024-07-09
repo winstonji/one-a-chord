@@ -2,8 +2,6 @@ import React, { useContext, useRef, useEffect } from 'react';
 import { LineElement } from '../../model/lineElement';
 import { ChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
-import { Block } from '../../model/block';
-import { FocusFinder } from '../../utils/focusFinderUtils';
 import { SelectionUtil } from '../../utils/selectionUtil';
 import { handleLyricSegmentKeyDown } from '../../services/keyInputServices/lyricSegmentKeyService';
 
