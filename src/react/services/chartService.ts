@@ -5,6 +5,12 @@ import { Identifiable } from "../model/interfaces/identifiable";
 import { v4 as uuidv4 } from 'uuid';
 import { Line } from "../model/line";
 import { Block } from "../model/block";
+import { Key } from "../model/key";
+
+export interface TimeSignatureUpdate{
+    timeUpper?: number,
+    timeLower?: number
+}
 
 export class ChartService {
 
@@ -285,9 +291,43 @@ export class ChartService {
         lineElementRef.chordSymbol.setChordSymbol(chordSymbolString);
     }
     
-    public updateHeader(block:Block, updatedHeader:string){
+    public updateBlockHeader(block:Block, updatedHeader:string){
         const blockRef: Block = this.locateElement<Block>(block, this.chart);
         blockRef.header = updatedHeader;
+    }
+
+    public updateChartTitle(updatedTitle: string){
+        this.chart.metaData.title = updatedTitle;
+    }
+
+    public updateChartKey(updatedKey: string){
+        const key = Key.getKeyValueByPrintName(updatedKey);
+        if(!key){
+
+            //TODO figure out how we want to handle this
+            console.error('invalid key entered');
+        }
+        this.chart.metaData.keyValue = key; 
+    }
+
+    public updateTime(updates: TimeSignatureUpdate){
+        if(!updates.timeLower && !updates.timeUpper){
+
+            //TODO figure out how we want to handle this
+            console.error('invalid time signature update, no data provided');
+        }
+        
+        if(updates.timeLower){
+            this.chart.metaData.signatureBottom = updates.timeLower;
+        }
+
+        if(updates.timeUpper){
+            this.chart.metaData.signatureTop = updates.timeUpper;
+        }
+    }
+
+    public updateTempo(updatedTempo: number){
+        this.chart.metaData.tempo = updatedTempo;
     }
 
     //Given an Identifiable, recursively gather IDs in an array. First, get the ID of the identifiable itself and push it to the array.
