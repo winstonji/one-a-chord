@@ -3,6 +3,8 @@ import "../styles/chartMetaDataStyles.scss"
 import { ChartMetaData } from '../../../model/chartMetaData';
 import TitleComponenent from './titleComponent';
 import KeyComponent from './keyComponent';
+import TempoComponent from './tempoComponent';
+import TimeComponent from './timeComponent';
 
 
 function ChartMetaDataComponent(chartMetaData: ChartMetaData){
@@ -11,12 +13,8 @@ function ChartMetaDataComponent(chartMetaData: ChartMetaData){
 		<TitleComponenent title = {chartMetaData.title}/>
 		<div className='oac-row'>
 			<KeyComponent keySig={chartMetaData?.keyValue?.printName ?? ''}/>
-			<p>Time - </p>
-			<div className='oac-col oac-metadata'>
-				<p className='oac-time-signature'>{chartMetaData.signatureTop}</p>
-				<p className='oac-time-signature'>{chartMetaData.signatureBottom}</p>
-			</div>
-			<p className='oac-metadata'>Tempo - {chartMetaData.tempo}</p>
+			<TimeComponent signatureTop={chartMetaData.signatureTop} signatureBottom={chartMetaData.signatureBottom}/>
+			<TempoComponent tempo={chartMetaData?.tempo || 0}/>
 		</div>
 	</div>
 	);

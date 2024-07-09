@@ -5,8 +5,8 @@ import { SelectionUtil } from "../../../utils/selectionUtil";
 import { ChartService } from "../../../services/chartService";
 import React from "react";
 
-function TempoComponent(props: { tempo: number }) {
-    const { tempo } = props;
+function TimeUpperComponent(props: { signatureTop: number }) {
+    const { signatureTop: signatureBottom } = props;
     const { chartEditingState, setChartEditingState, setCurrentFocus } = useContext(ChartContext);
 
     const editableRef = useRef<HTMLHeadingElement>(null);
@@ -15,7 +15,7 @@ function TempoComponent(props: { tempo: number }) {
 
     useEffect(() => {
         if (editableRef.current) {
-            if (currentFocus.id === ConstantFocusIds.TEMPO) {
+            if (currentFocus.id === ConstantFocusIds.TIME_UPPER) {
                 const textNode = editableRef.current.childNodes[0];
                 if (textNode) {
                     SelectionUtil.setCursorPos(textNode, currentFocus.position);
@@ -24,10 +24,10 @@ function TempoComponent(props: { tempo: number }) {
         }
     });
 
-    function updateTempo(newVal: string) {
+    function updateTimeUpper(newVal: string) {
         setChartEditingState((chartEditingState) => {
             const chartService = ChartService.with(chartEditingState.chart);
-            chartService.updateTempo(parseInt(newVal) || 0);
+            chartService.updateTime({timeUpper: parseInt(newVal) || 0});
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -39,23 +39,22 @@ function TempoComponent(props: { tempo: number }) {
     }
 
     const handleFocusViaClick = () => {
-        setCurrentFocus({ id: ConstantFocusIds.TEMPO, position: SelectionUtil.getCursorPos() });
+        setCurrentFocus({ id: ConstantFocusIds.TIME_UPPER, position: SelectionUtil.getCursorPos() });
     }
 
     return <>
         <div className='oac-row'>
-            <span>Tempo - </span>
             <p
                 ref={editableRef}
-                className='oac-metadata'
+                className='oac-time-signature'
                 contentEditable={true}
-                onInput={(event) => updateTempo(event.currentTarget.textContent || '')}
+                onInput={(event) => updateTimeUpper(event.currentTarget.textContent || '')}
                 onClick={handleFocusViaClick}
             >
-                {tempo}
+                {signatureBottom}
             </p>
         </div>
     </>
 }
 
-export default TempoComponent;
+export default TimeUpperComponent;
