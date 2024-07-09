@@ -17,7 +17,6 @@ function BlockComponent (block:Block){
 	const currentFocus = chartEditingState.currentFocus;
 
 	useEffect(() => {
-        // Set the initial lyric content
         if (editableHeader.current) {
             editableHeader.current.textContent = block.header;
 
@@ -47,10 +46,16 @@ function BlockComponent (block:Block){
         })
 	}
 
+    const handleFocusViaClick = () => {
+        setCurrentFocus({id: block.id, position: SelectionUtil.getCursorPos()});
+    }
+
 	return (<div className='oac-block'>
 		<h3
+            ref={editableHeader}
 			className='oac-block-header'
 			contentEditable={true}
+            onClick={handleFocusViaClick}
 			onInput={(event) => updateHeader(event.currentTarget.textContent || '')}
 		>
 			{block.header}

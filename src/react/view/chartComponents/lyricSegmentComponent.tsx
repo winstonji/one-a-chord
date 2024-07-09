@@ -69,7 +69,6 @@ function LyricSegmentComponent(lineElement: LineElement) {
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.
     //Otherwise when you start typing, the cursor will jump to an incorrect position because the current focus state is wrong.
     const handleFocusViaClick = () => {
-        console.log(lineElement.id);
         setCurrentFocus({id: lineElement.lyricSegment.id, position: SelectionUtil.getCursorPos()});
     }
       
