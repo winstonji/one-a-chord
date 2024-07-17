@@ -25,11 +25,11 @@ const ProgramWindow = () => {
     });
 
     useEffect(() => {
-        console.log(undoRef.current);
         const undoTimeout = setTimeout(() => {
             const previousState = undoRef.current.undoStack.at(-1);
-            if (!previousState || isEqual(previousState.chart, chartEditingState.chart)){
+            if (!previousState || !isEqual(previousState.chart, chartEditingState.chart)){
                 undoRef.current.undoStack.push(chartEditingState);
+                console.log(undoRef.current.undoStack);
             }
         }, 1000);
 
