@@ -1,10 +1,6 @@
 import { UndoWrapper } from "../../model/interfaces/undoWrapper";
 import { ChartEditingState } from "../../view/types/chartContext";
-
-export interface GlobalKeyServiceResult{
-    updated: boolean,
-    chartEditingState?: ChartEditingState
-}
+import { KeyServiceResult } from "../interfaces/keyServiceResult";
 
 export class GlobalKeyService{
     private chartEditingState: ChartEditingState;
@@ -15,7 +11,7 @@ export class GlobalKeyService{
         this.undoWrapper = undoWrapper;
     }
 
-    public handleGlobalKeyDown(event:React.KeyboardEvent):GlobalKeyServiceResult{
+    public handleGlobalKeyDown(event:React.KeyboardEvent): KeyServiceResult | undefined{
         let updateResult;
 
         if (event.ctrlKey) {
@@ -26,15 +22,15 @@ export class GlobalKeyService{
 
         if(updateResult){
             return {
-                updated: true,
-                chartEditingState: {...updateResult}
+                ...updateResult
             }
         }
     
-        return {updated: false}
+        return undefined;
     }
 
     private handleUndo(event:React.KeyboardEvent){
+        debugger;
         event.preventDefault();
         this.undoWrapper.redoStack.push(this.chartEditingState);
         const previousState = this.undoWrapper.undoStack.pop();

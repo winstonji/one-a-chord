@@ -1,13 +1,9 @@
 import { UndoWrapper } from "../../model/interfaces/undoWrapper";
 import { LineElement } from "../../model/lineElement";
 import { ChartEditingState } from "../../view/types/chartContext";
+import { KeyServiceResult } from "../interfaces/keyServiceResult";
 import { GlobalKeyService } from "./globalKeyService";
 import { LineElementKeyService } from "./lineElementKeyService";
-
-export interface ChordSymbolKeyServiceResult{
-    updated: boolean,
-    chartEditingState?: ChartEditingState
-}
 
 export class ChordSymbolKeyService{
 
@@ -24,52 +20,43 @@ export class ChordSymbolKeyService{
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): ChordSymbolKeyServiceResult{
+    ): KeyServiceResult{
         
         const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
-        const result = globalKeyService.handleGlobalKeyDown(event);
-        if(result.updated){
+        let result = globalKeyService.handleGlobalKeyDown(event);
+        if(result){
             return result;
         }
-
-        let updateResult;
     
         if (event.key === 'Tab') {
-            updateResult = {
+            result = {
                 chart: {...this.chartEditingState.chart},
                 currentFocus: this.handleTab(event, lineElement)
             }
         }
         else if (event.ctrlKey && event.code === 'KeyL') {
-            updateResult = {
+            result = {
                 chart: {...this.chartEditingState.chart},
                 currentFocus: this.handleEditFocus(event, lineElement)
             }
         } else {
-            const lineElementKeyService = new LineElementKeyService('CHORD', this.chartEditingState, this.undoWrapper);
-            const result = lineElementKeyService.handleLineElementKeyDown(
+            const lineElementKeyService = new LineElementKeyService('CHORD', this.chartEditingState);
+            const lineResult = lineElementKeyService.handleLineElementKeyDown(
                 event,
                 lineElement,
                 cursorPosition,
                 contentLength
             );
     
-            if(result.updated){
-                updateResult = {
+            if(result){
+                result = {
                     chart: {...this.chartEditingState.chart},
-                    currentFocus: result.focus!
+                    ...lineResult
                 }
             }
         }
     
-        if(updateResult){
-            return {
-                updated: true,
-                chartEditingState: {...updateResult}
-            }
-        }
-    
-        return {updated: false}
+        return result;
     }
     
     private handleTab(event:React.KeyboardEvent, lineElement:LineElement){

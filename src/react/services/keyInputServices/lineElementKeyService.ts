@@ -1,15 +1,9 @@
 import { Chart } from "../../model/chart";
-import { UndoWrapper } from "../../model/interfaces/undoWrapper";
-import { Line } from "../../model/line";
 import { LineElement } from "../../model/lineElement";
 import { FocusFinder } from "../../utils/focusFinderUtils";
 import { ChartEditingState } from "../../view/types/chartContext";
 import { CurrentFocus } from "../../view/types/currentFocus";
-
-export interface LineElementKeyDownResult{
-    updated: boolean,
-    focus?: CurrentFocus
-}
+import { KeyServiceResult } from "../interfaces/keyServiceResult";
 
 type LineEditMode = 'CHORD' | 'LYRIC'
 
@@ -17,12 +11,10 @@ export class LineElementKeyService {
 
     private editMode:LineEditMode;
     private chartEditingState: ChartEditingState
-    private undoWrapper: UndoWrapper;
 
-    constructor(mode:LineEditMode, chartEditingState: ChartEditingState, undoWrapper: UndoWrapper){
+    constructor(mode:LineEditMode, chartEditingState: ChartEditingState){
         this.editMode = mode;
         this.chartEditingState = chartEditingState;
-        this.undoWrapper = undoWrapper;
     }
 
     public handleLineElementKeyDown(
@@ -30,9 +22,9 @@ export class LineElementKeyService {
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): LineElementKeyDownResult {
+    ): KeyServiceResult | undefined{
         
-        let updatedFocus;
+        let updatedFocus: CurrentFocus;
         if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             updatedFocus = this.handleArrowRight(event, lineElement);
         } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
@@ -46,18 +38,17 @@ export class LineElementKeyService {
         } else if (event.code === 'End') {
             updatedFocus = this.handleEndKey(event, this.chartEditingState.chart, lineElement);
         }
-        
+            
         if(updatedFocus){
             return {
-                updated: true,
-                focus: updatedFocus
+                currentFocus: updatedFocus
             }
         }
-    
-        return {updated: false}
+
+        return undefined
     }
     
-    private handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement){
+    private handleArrowRight(event:React.KeyboardEvent, lineElement:LineElement): CurrentFocus | undefined{
         event.preventDefault();
         const newFocus = lineElement.getNext();
         if (newFocus) {
@@ -66,17 +57,21 @@ export class LineElementKeyService {
                 position: 0
             };
         }
+
+        return undefined;
     }
     
-    private handleArrowLeft(event:React.KeyboardEvent, lineElement:LineElement){
+    private handleArrowLeft(event:React.KeyboardEvent, lineElement:LineElement): CurrentFocus | undefined{
         event.preventDefault();
         const newFocus = lineElement.getPrevious();
         if (newFocus) {
             return this.discernFocus(this.editMode, newFocus);
         }
+
+        return undefined;
     }
     
-    private handleArrowUp(event:React.KeyboardEvent, lineElement:LineElement){
+    private handleArrowUp(event:React.KeyboardEvent, lineElement:LineElement): CurrentFocus{
         event.preventDefault();
         let newFocus:LineElement
         if (event.ctrlKey) {
@@ -88,7 +83,7 @@ export class LineElementKeyService {
         return this.discernFocus(this.editMode, newFocus)
     }
     
-    private handleArrowDown(event:React.KeyboardEvent, lineElement:LineElement){
+    private handleArrowDown(event:React.KeyboardEvent, lineElement:LineElement): CurrentFocus{
         event.preventDefault();
         let newFocus:LineElement
         if (event.ctrlKey) {
@@ -100,7 +95,7 @@ export class LineElementKeyService {
         return this.discernFocus(this.editMode, newFocus)
     }
     
-    private handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+    private handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement): CurrentFocus | undefined{
         let newFocus:LineElement;
         if (event.ctrlKey) {
             newFocus = FocusFinder.focusChartStart(chart);
@@ -113,6 +108,8 @@ export class LineElementKeyService {
                 position: 0
             }
         }
+
+        return undefined;
     }
     
     private handleEndKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
@@ -125,11 +122,13 @@ export class LineElementKeyService {
         if (newFocus) {
             return{...this.discernFocus(this.editMode, newFocus)}
         }
+
+        return undefined;
     }
 
    
 
-    private discernFocus(mode:LineEditMode, lineElement:LineElement){
+    private discernFocus(mode:LineEditMode, lineElement:LineElement): CurrentFocus{
         if (mode === 'CHORD') {
             return {
                 id: lineElement.chordSymbol.id,
@@ -141,5 +140,7 @@ export class LineElementKeyService {
                 position: lineElement.lyricSegment.lyric.length
             }
         }
+
+        throw new Error(`Unknown mode ${mode} provided`)
     }
 }

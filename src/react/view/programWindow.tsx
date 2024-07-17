@@ -7,6 +7,8 @@ import { ChartEditingState, IChartContext } from './types/chartContext';
 import { CurrentFocus, UpdateCurrentFocusProps } from './types/currentFocus';
 import { UndoWrapper } from '../model/interfaces/undoWrapper';
 import isEqual from 'lodash/isEqual';
+import { KeyServiceResult } from '../services/interfaces/keyServiceResult';
+import { optionalSpread } from '../utils/optionalSpread';
 
 export const ChartContext = createContext<IChartContext>(null); 
 
@@ -24,12 +26,14 @@ const ProgramWindow = () => {
         return {chart, currentFocus} as ChartEditingState;
     });
 
+    const undoRef = useRef<UndoWrapper>({undoStack:[], redoStack:[]});
     useEffect(() => {
         const undoTimeout = setTimeout(() => {
-            const previousState = undoRef.current.undoStack.at(-1);
-            if (!previousState || !isEqual(previousState.chart, chartEditingState.chart)){
-                undoRef.current.undoStack.push(chartEditingState);
-                console.log(undoRef.current.undoStack);
+            const {dirtyState, undoStack} = undoRef.current;
+            if(dirtyState){
+                console.log('updating dirty state');
+                undoStack.push(dirtyState);
+                undoRef.current.dirtyState = undefined;
             }
         }, 1000);
 
@@ -37,8 +41,6 @@ const ProgramWindow = () => {
             clearTimeout(undoTimeout);
         }
     });
-
-    const undoRef = useRef<UndoWrapper>({undoStack:[], redoStack:[]});
     
     /**
      * A helper to update only the focus and not the chart data.
@@ -56,10 +58,23 @@ const ProgramWindow = () => {
         })
     }
 
+    function setChartEditingStateProcessor(editorFunction: (chartEditingState: ChartEditingState) => KeyServiceResult){
+        setChartEditingState((chartEditingState) => {
+            const result: KeyServiceResult | undefined = editorFunction(chartEditingState);
+            
+            if(result?.chart && !undoRef.current.dirtyState){
+                undoRef.current.dirtyState = {...chartEditingState};
+            }
+
+            //Only update the react state if the focus or the chart contents (or both) changed. Otherwise there is no reason to re-render.
+            return result? optionalSpread(chartEditingState, result): chartEditingState;
+        })
+    }
+
 	return (
         <>
         {chartEditingState && 
-            <ChartContext.Provider value={{chartEditingState, setChartEditingState, setCurrentFocus: currentFocusHelper, undoRef}}>
+            <ChartContext.Provider value={{chartEditingState, setChartEditingState: setChartEditingStateProcessor, setCurrentFocus: currentFocusHelper, undoRef}}>
                 {<>
                     <Toolbar/>
                     <Canvas/>

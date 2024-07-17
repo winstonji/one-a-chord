@@ -49,19 +49,12 @@ function LyricSegmentComponent(lineElement: LineElement) {
 
         setChartEditingState((chartEditingState) => {
             const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState, undoRef.current);
-            const updateResult = lyricSegmentKeyService.handleLyricSegmentKeyDown(
+            return lyricSegmentKeyService.handleLyricSegmentKeyDown(
                                              event,
                                              lineElement,
                                              cursorPosition,
                                              contentLength
                                         );
-
-            //Only update the react state if the focus or the chart contents (or both) changed. Otherwise there is no reason to re-render.
-            if(updateResult.updated){
-                return updateResult.chartEditingState
-            }
-
-            return chartEditingState;
         });
     };
     

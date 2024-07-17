@@ -6,11 +6,7 @@ import { Block } from "../../model/block";
 import { LineElementKeyService } from "./lineElementKeyService";
 import { UndoWrapper } from "../../model/interfaces/undoWrapper";
 import { GlobalKeyService } from "./globalKeyService";
-
-export interface LyricSegmentKeyServiceResult{
-    updated: boolean,
-    chartEditingState?: ChartEditingState
-}
+import { KeyServiceResult } from "../interfaces/keyServiceResult";
 
 export class LyricSegmentKeyService {
 
@@ -27,73 +23,64 @@ export class LyricSegmentKeyService {
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): LyricSegmentKeyServiceResult{
-    
-        let updateResult;
-        
+    ): KeyServiceResult{
         const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
-        const result = globalKeyService.handleGlobalKeyDown(event);
-        if(result.updated){
+        let result: KeyServiceResult | undefined = globalKeyService.handleGlobalKeyDown(event);
+
+        if(result){
             return result;
         }
 
         if (event.key === ' ') {
-            updateResult = this.handleSpace(
+            result = this.handleSpace(
                 event,
                 this.chartEditingState.chart,
                 lineElement,
                 cursorPosition
             );
         } else if (event.key === 'Enter') {
-            updateResult = this.handleEnter(
+            result = this.handleEnter(
                 event,
                 this.chartEditingState.chart,
                 lineElement,
                 cursorPosition
             );
         } else if (event.key === 'Backspace' && cursorPosition === 0) {
-            updateResult = this.handleBackspace(
+            result = this.handleBackspace(
                 event,
                 this.chartEditingState.chart,
                 lineElement
             );
         } else if (event.key === 'Delete' && cursorPosition === contentLength) {
-            updateResult = this.handleDelete(
+            result = this.handleDelete(
                 event,
                 this.chartEditingState,
                 lineElement,
                 contentLength
             );
         } else if (event.ctrlKey && event.code === 'KeyK') {
-            updateResult = {
+            result = {
                 chart: {...this.chartEditingState.chart},
                 currentFocus: this.handleEditFocus(event, lineElement)
             }
         } else {
-            const lineElementKeyService = new LineElementKeyService('LYRIC', this.chartEditingState, this.undoWrapper);
-            const result = lineElementKeyService.handleLineElementKeyDown(
+            const lineElementKeyService = new LineElementKeyService('LYRIC', this.chartEditingState);
+            const lineResult = lineElementKeyService.handleLineElementKeyDown(
                     event,
                     lineElement,
                     cursorPosition,
                     contentLength
                 );
     
-            if(result.updated){
-                updateResult = {
+            if(lineResult){
+                result = {
                     chart: {...this.chartEditingState.chart},
-                    currentFocus: result.focus!
+                    ...lineResult
                 }
             }
         }
     
-        if(updateResult){
-            return {
-                updated: true,
-                chartEditingState: {...updateResult}
-            }
-        }
-        
-        return {updated: false}
+        return result;
     }
     
     private handleSpace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
