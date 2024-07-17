@@ -7,7 +7,7 @@ import { LyricSegmentKeyService } from '../../services/keyInputServices/lyricSeg
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
-    const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
+    const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useContext(ChartContext);
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
     const currentFocus = chartEditingState.currentFocus;
@@ -48,7 +48,7 @@ function LyricSegmentComponent(lineElement: LineElement) {
         const contentLength = editableRef.current.textContent.length;    
 
         setChartEditingState((chartEditingState) => {
-            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState);
+            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState, undoRef.current);
             const updateResult = lyricSegmentKeyService.handleLyricSegmentKeyDown(
                                              event,
                                              lineElement,

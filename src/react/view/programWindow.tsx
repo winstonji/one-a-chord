@@ -1,10 +1,12 @@
-import React, { useEffect, useState, createContext } from 'react'
+import React, { useEffect, useState, useRef, createContext } from 'react'
 import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
 import { generateFakeChart } from '../test/testUtils/chartFaker';
 import { ChartEditingState, IChartContext } from './types/chartContext';
 import { CurrentFocus, UpdateCurrentFocusProps } from './types/currentFocus';
+import { UndoWrapper } from '../model/interfaces/undoWrapper';
+import isEqual from 'lodash/isEqual';
 
 export const ChartContext = createContext<IChartContext>(null); 
 
@@ -21,6 +23,22 @@ const ProgramWindow = () => {
 
         return {chart, currentFocus} as ChartEditingState;
     });
+
+    useEffect(() => {
+        console.log(undoRef.current);
+        const undoTimeout = setTimeout(() => {
+            const previousState = undoRef.current.undoStack.at(-1);
+            if (!previousState || isEqual(previousState.chart, chartEditingState.chart)){
+                undoRef.current.undoStack.push(chartEditingState);
+            }
+        }, 1000);
+
+        return () => {
+            clearTimeout(undoTimeout);
+        }
+    });
+
+    const undoRef = useRef<UndoWrapper>({undoStack:[], redoStack:[]});
     
     /**
      * A helper to update only the focus and not the chart data.
@@ -41,7 +59,7 @@ const ProgramWindow = () => {
 	return (
         <>
         {chartEditingState && 
-            <ChartContext.Provider value={{chartEditingState, setChartEditingState, setCurrentFocus: currentFocusHelper}}>
+            <ChartContext.Provider value={{chartEditingState, setChartEditingState, setCurrentFocus: currentFocusHelper, undoRef}}>
                 {<>
                     <Toolbar/>
                     <Canvas/>

@@ -1,4 +1,5 @@
 import { Chart } from "../../model/chart";
+import { UndoWrapper } from "../../model/interfaces/undoWrapper";
 import { Line } from "../../model/line";
 import { LineElement } from "../../model/lineElement";
 import { FocusFinder } from "../../utils/focusFinderUtils";
@@ -16,10 +17,12 @@ export class LineElementKeyService {
 
     private editMode:LineEditMode;
     private chartEditingState: ChartEditingState
+    private undoWrapper: UndoWrapper;
 
-    constructor(mode:LineEditMode, chartEditingState: ChartEditingState){
+    constructor(mode:LineEditMode, chartEditingState: ChartEditingState, undoWrapper: UndoWrapper){
         this.editMode = mode;
         this.chartEditingState = chartEditingState;
+        this.undoWrapper = undoWrapper;
     }
 
     public handleLineElementKeyDown(
@@ -123,6 +126,8 @@ export class LineElementKeyService {
             return{...this.discernFocus(this.editMode, newFocus)}
         }
     }
+
+   
 
     private discernFocus(mode:LineEditMode, lineElement:LineElement){
         if (mode === 'CHORD') {

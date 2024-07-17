@@ -4,6 +4,8 @@ import { LineElement } from "../../model/lineElement";
 import { Chart } from "../../model/chart";
 import { Block } from "../../model/block";
 import { LineElementKeyService } from "./lineElementKeyService";
+import { UndoWrapper } from "../../model/interfaces/undoWrapper";
+import { GlobalKeyService } from "./globalKeyService";
 
 export interface LyricSegmentKeyServiceResult{
     updated: boolean,
@@ -13,9 +15,11 @@ export interface LyricSegmentKeyServiceResult{
 export class LyricSegmentKeyService {
 
     private chartEditingState: ChartEditingState;
+    private undoWrapper: UndoWrapper
 
-    public constructor(chartEditingState: ChartEditingState){
+    public constructor(chartEditingState: ChartEditingState, undoWrapper:UndoWrapper){
         this.chartEditingState = chartEditingState;
+        this.undoWrapper = undoWrapper;
     }
 
     public handleLyricSegmentKeyDown(
@@ -27,6 +31,12 @@ export class LyricSegmentKeyService {
     
         let updateResult;
         
+        const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
+        const result = globalKeyService.handleGlobalKeyDown(event);
+        if(result.updated){
+            return result;
+        }
+
         if (event.key === ' ') {
             updateResult = this.handleSpace(
                 event,
@@ -60,7 +70,7 @@ export class LyricSegmentKeyService {
                 currentFocus: this.handleEditFocus(event, lineElement)
             }
         } else {
-            const lineElementKeyService = new LineElementKeyService('LYRIC', this.chartEditingState);
+            const lineElementKeyService = new LineElementKeyService('LYRIC', this.chartEditingState, this.undoWrapper);
             const result = lineElementKeyService.handleLineElementKeyDown(
                     event,
                     lineElement,

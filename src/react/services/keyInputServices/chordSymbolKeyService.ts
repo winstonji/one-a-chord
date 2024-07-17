@@ -1,5 +1,7 @@
+import { UndoWrapper } from "../../model/interfaces/undoWrapper";
 import { LineElement } from "../../model/lineElement";
 import { ChartEditingState } from "../../view/types/chartContext";
+import { GlobalKeyService } from "./globalKeyService";
 import { LineElementKeyService } from "./lineElementKeyService";
 
 export interface ChordSymbolKeyServiceResult{
@@ -9,10 +11,12 @@ export interface ChordSymbolKeyServiceResult{
 
 export class ChordSymbolKeyService{
 
-    private chartEditingState: ChartEditingState
+    private chartEditingState: ChartEditingState;
+    private undoWrapper: UndoWrapper;
 
-    public constructor(chartEditingState: ChartEditingState){
+    public constructor(chartEditingState: ChartEditingState, undoWrapper: UndoWrapper){
         this.chartEditingState = chartEditingState;    
+        this.undoWrapper = undoWrapper;
     }
 
     public handleChordSymbolKeyDown(
@@ -22,6 +26,12 @@ export class ChordSymbolKeyService{
         contentLength: number
     ): ChordSymbolKeyServiceResult{
         
+        const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
+        const result = globalKeyService.handleGlobalKeyDown(event);
+        if(result.updated){
+            return result;
+        }
+
         let updateResult;
     
         if (event.key === 'Tab') {
@@ -36,7 +46,7 @@ export class ChordSymbolKeyService{
                 currentFocus: this.handleEditFocus(event, lineElement)
             }
         } else {
-            const lineElementKeyService = new LineElementKeyService('CHORD', this.chartEditingState);
+            const lineElementKeyService = new LineElementKeyService('CHORD', this.chartEditingState, this.undoWrapper);
             const result = lineElementKeyService.handleLineElementKeyDown(
                 event,
                 lineElement,
@@ -89,4 +99,3 @@ export class ChordSymbolKeyService{
         };
     }
 }
-

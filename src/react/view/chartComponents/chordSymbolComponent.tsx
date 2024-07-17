@@ -7,7 +7,7 @@ import { ChordSymbolKeyService } from '../../services/keyInputServices/chordSymb
 
 function ChordSymbolComponent(lineElement: LineElement) {
 
-    const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
+    const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useContext(ChartContext);
     const editableRef = useRef(null); // Ref for the contentEditable div
 
     const currentFocus = chartEditingState.currentFocus;
@@ -49,7 +49,7 @@ function ChordSymbolComponent(lineElement: LineElement) {
         const contentLength = editableRef.current.textContent.length;    
 
         setChartEditingState((chartEditingState) => {
-            const chordSymbolKeyService = new ChordSymbolKeyService(chartEditingState);
+            const chordSymbolKeyService = new ChordSymbolKeyService(chartEditingState, undoRef.current);
             const updateResult = chordSymbolKeyService.handleChordSymbolKeyDown(
                                              event,
                                              lineElement,
