@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Line } from "../model/line";
 import { Block } from "../model/block";
 import { Key } from "../model/key";
+import { update } from "lodash";
 
 export interface TimeSignatureUpdate{
     timeUpper?: number,
@@ -30,11 +31,10 @@ export class ChartService {
 
     public splitLineElement(firstLineElement: LineElement, chordSymbol: string, splittingPoint: number): LineElement {           
         // Retrieve the line that contains the previousElement.
-        const firstLineElementRef:LineElement = this.locateElement<LineElement>(firstLineElement, this.chart);
-
+        const firstLineElementRef:LineElement | undefined = this.locateElement<LineElement>(firstLineElement, this.chart);
+ 
         if (!firstLineElementRef) {
-            console.error(`The requested chord wrapper with id ${firstLineElement.id} cannot be found.`);
-            return null;
+            throw new Error(`The requested chord wrapper with id ${firstLineElement.id} cannot be found.`);
         }
 
         const line = firstLineElementRef.parent;
@@ -56,11 +56,10 @@ export class ChartService {
 
     public insertNewLineAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Line {
         
-        const currentlyFocusedLineElementRef: LineElement = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
+        const currentlyFocusedLineElementRef: LineElement | undefined = this.locateElement<LineElement>(currentlyFocusedLineElement, this.chart);
 
         if (!currentlyFocusedLineElementRef) {
-            console.error(`The requested chord wrapper with id ${currentlyFocusedLineElement.id} cannot be found.`);
-            return null;
+            throw new Error(`The requested chord wrapper with id ${currentlyFocusedLineElement.id} cannot be found.`);
         }
     
         let secondLine: Line;
@@ -133,10 +132,15 @@ export class ChartService {
     }
 
     public mergeLineElement(targetElement: LineElement, direction: -1 | 1): LineElement{
-        const line: Line = this.locateElement<Line>(targetElement.parent, this.chart);
-        const updatedTarget: LineElement = this.locateElement<LineElement>(targetElement, this.chart);
+        const line: Line | undefined= this.locateElement<Line>(targetElement.parent, this.chart);
+        const updatedTarget: LineElement | undefined = this.locateElement<LineElement>(targetElement, this.chart);
+
         if (!line) {
-            return null;
+            throw new Error(`Line with id ${targetElement.parent.id} not found`)
+        }
+
+        if(!updatedTarget){
+            throw new Error(`Line element with id ${targetElement.parent.id} not found`)
         }
             
         const index = line.children.findIndex((element) => element.id === updatedTarget.id);
@@ -164,28 +168,36 @@ export class ChartService {
         }
     }
 
-    public mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement{
-        try {
-            const secondLine:Line = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-            let firstLine:Line = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
-            console.log(firstLine.id);
-            const newFocusIndex = firstLine.children.length;
-            firstLine.children = firstLine.children.concat(secondLine.children);
-            for (let child of firstLine.children){
-                child.parent = firstLine;
-            }
-    
-            // delete secondLine.
-            const block:Block = this.locateElement<Block>(secondLine.parent, this.chart);
-            const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
-            block.children.splice(lineIndex, 1);
-            if (block.children.length <= 0) {
-                this.deleteBlock(block);
-            }
-            return firstLine.children[newFocusIndex];
-        } catch (error) {
-            return undefined;
+    private mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement{
+        const secondLine:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
+        if(!secondLine){
+            throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
+
+        let firstLine:Line | undefined = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
+        if(!firstLine){
+            throw new Error(`Line with id ${secondLine.getPrevious().id} not found`);
+        }
+
+        console.log(firstLine.id);
+        const newFocusIndex = firstLine.children.length;
+        firstLine.children = firstLine.children.concat(secondLine.children);
+        for (let child of firstLine.children){
+            child.parent = firstLine;
+        }
+
+        // delete secondLine.
+        const block:Block | undefined = this.locateElement<Block>(secondLine.parent, this.chart);
+        if(!block){
+            throw new Error(`Line with id ${secondLine.parent.id} not found`);
+        }
+
+        const lineIndex = block.children.findIndex((line) => line.id === secondLine.id);
+        block.children.splice(lineIndex, 1);
+        if (block.children.length <= 0) {
+            this.deleteBlock(block);
+        }
+        return firstLine.children[newFocusIndex];
     }
 
     public mergeNextIntoLine(currentlyFocusedLineElement:LineElement): LineElement{
