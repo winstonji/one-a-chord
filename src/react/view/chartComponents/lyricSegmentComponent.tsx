@@ -45,18 +45,27 @@ function LyricSegmentComponent(lineElement: LineElement) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = SelectionUtil.getCursorPos();
-        const contentLength = editableRef.current.textContent.length;    
-
+        let contentLength: number;
+        if (!editableRef.current?.textContent) {
+            contentLength = 0;
+        } else {
+            contentLength = editableRef.current.textContent.length;
+        }
+    
         setChartEditingState((chartEditingState) => {
             const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState, undoRef.current);
-            return lyricSegmentKeyService.handleLyricSegmentKeyDown(
-                                             event,
-                                             lineElement,
-                                             cursorPosition,
-                                             contentLength
-                                        );
+            const newState = lyricSegmentKeyService.handleLyricSegmentKeyDown(
+                event,
+                lineElement,
+                cursorPosition,
+                contentLength
+            );
+    
+            // Ensure newState is not undefined
+            return newState || chartEditingState;
         });
     };
+    
     
 
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.

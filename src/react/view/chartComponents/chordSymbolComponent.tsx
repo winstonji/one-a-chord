@@ -8,7 +8,7 @@ import { ChordSymbolKeyService } from '../../services/keyInputServices/chordSymb
 function ChordSymbolComponent(lineElement: LineElement) {
 
     const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useContext(ChartContext);
-    const editableRef = useRef(null); // Ref for the contentEditable div
+    const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
     const currentFocus = chartEditingState.currentFocus;
 
@@ -17,14 +17,14 @@ function ChordSymbolComponent(lineElement: LineElement) {
         // Set the initial chord symbol content
         if (editableRef.current) {
             editableRef.current.textContent = lineElement.chordSymbol.backingString;
-        }
-
-        if(currentFocus.id === lineElement.chordSymbol.id){
-            editableRef.current.focus();
             
-            const textNode = editableRef.current.childNodes[0];
-            if (textNode) {
-               SelectionUtil.setCursorPos(textNode, currentFocus.position);
+            if(currentFocus.id === lineElement.chordSymbol.id){
+                editableRef.current.focus();
+                
+                const textNode = editableRef.current.childNodes[0];
+                if (textNode) {
+                   SelectionUtil.setCursorPos(textNode, currentFocus.position);
+                }
             }
         }
     });
@@ -46,7 +46,12 @@ function ChordSymbolComponent(lineElement: LineElement) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = SelectionUtil.getCursorPos();
-        const contentLength = editableRef.current.textContent.length;    
+        let contentLength:number;
+        if (!editableRef.current?.textContent){
+            contentLength = 0;
+        } else {
+            contentLength = editableRef.current.textContent.length;
+        }
 
         setChartEditingState((chartEditingState) => {
             const chordSymbolKeyService = new ChordSymbolKeyService(chartEditingState, undoRef.current);
