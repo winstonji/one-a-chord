@@ -23,7 +23,7 @@ export class LyricSegmentKeyService {
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): KeyServiceResult{
+    ): KeyServiceResult | undefined{
         const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
         let result: KeyServiceResult | undefined = globalKeyService.handleGlobalKeyDown(event);
 
@@ -94,11 +94,12 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
+    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number): ChartEditingState{
         event.preventDefault();
         if (event.ctrlKey) {
             const chartService = ChartService.with(chart);
             const newBlock:Block = chartService.insertNewBlockAfter(lineElement, cursorPosition);
+
             return {
                 chart: chartService.finalize(),
                 currentFocus: {

@@ -239,7 +239,12 @@ export class ChartService {
     }
 
     insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
-        const currentBlock: Block = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
+        const currentBlock: Block | undefined = this.locateElement<Block>(currentlyFocusedLineElement.parent.parent, this.chart);
+
+        if(!currentBlock){
+            throw new Error(`Current block ${currentlyFocusedLineElement.parent.parent.id} cannot be found.`)
+        }
+
         const blockIndex: number = currentBlock.chart.children.findIndex((element) => element.id === currentBlock.id);
         const newBlock: Block = new Block(currentBlock.chart, "Block", uuidv4());
         const newLine: Line = this.insertNewLineAfter(currentlyFocusedLineElement, cursorPosition);
