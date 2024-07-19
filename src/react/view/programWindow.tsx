@@ -3,7 +3,7 @@ import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
 import { generateFakeChart } from '../test/testUtils/chartFaker';
-import { ChartEditingState, IChartContext } from './types/chartContext';
+import { ChartEditingState, IChartContext, } from './types/chartContext';
 import { CurrentFocus, UpdateCurrentFocusProps } from './types/currentFocus';
 import { UndoWrapper } from '../model/interfaces/undoWrapper';
 import isEqual from 'lodash/isEqual';
