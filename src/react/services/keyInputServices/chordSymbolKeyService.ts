@@ -20,7 +20,7 @@ export class ChordSymbolKeyService{
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): KeyServiceResult{
+    ): KeyServiceResult | undefined {
         
         const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
         let result = globalKeyService.handleGlobalKeyDown(event);

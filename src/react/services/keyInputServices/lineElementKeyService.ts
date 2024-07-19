@@ -24,7 +24,7 @@ export class LineElementKeyService {
         contentLength: number
     ): KeyServiceResult | undefined{
         
-        let updatedFocus: CurrentFocus;
+        let updatedFocus: CurrentFocus | undefined;
         if (event.key === 'ArrowRight' && (event.ctrlKey || cursorPosition === contentLength)) {
             updatedFocus = this.handleArrowRight(event, lineElement);
         } else if (event.key === 'ArrowLeft' && (event.ctrlKey || cursorPosition === 0)) {
