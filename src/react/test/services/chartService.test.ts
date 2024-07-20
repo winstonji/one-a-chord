@@ -24,19 +24,33 @@ describe("chartService::updateChord tests", () => {
     });
 
     test("update a chord wrapper and check the backing string", () => {
-        expect(fakeChart.getFirstChordWrapper().chordSymbol.backingString).not.toEqual("A");
-        chartService.updateChord(fakeChart.getFirstChordWrapper(), "A");
-        expect(fakeChart.getFirstChordWrapper().chordSymbol.backingString).toEqual("A");
+        const lineElement = fakeChart.getFirstChordWrapper();
+        expect(lineElement).not.toBeNull();
+        expect(lineElement!.chordSymbol.backingString).not.toEqual("A");
+
+        chartService.updateChord(lineElement!, "A");
+        const updatedLineElement = fakeChart.getFirstChordWrapper();
+        expect(updatedLineElement).not.toBeNull();
+        expect(updatedLineElement!.chordSymbol.backingString).toEqual("A");
     });
 
     test("update a chord wrapper and check the root", () => {
-        expect(fakeChart.getFirstChordWrapper().chordSymbol.root).not.toEqual("Gb");
-        chartService.updateChord(fakeChart.getFirstChordWrapper(), "Gb");
-        expect(fakeChart.getFirstChordWrapper().chordSymbol.root).toEqual(Key.Gb);
+        const lineElement = fakeChart.getFirstChordWrapper();
+        expect(lineElement).not.toBeNull();
+        expect(lineElement!.chordSymbol.root).not.toEqual("Gb");
+
+        chartService.updateChord(lineElement!, "Gb");
+        const updatedLineElement = fakeChart.getFirstChordWrapper();
+        expect(updatedLineElement).not.toBeNull();
+        expect(updatedLineElement!.chordSymbol.root).toEqual(Key.Gb);
     });
 
     test("update a chord wrapper and check the quality", () => {
-        chartService.updateChord(fakeChart.getFirstChordWrapper(), "Gbmaj");
-        expect(fakeChart.getFirstChordWrapper().chordSymbol.quality).toEqual("maj");
+        const lineElement = fakeChart.getFirstChordWrapper()
+        expect(lineElement).not.toBeNull();
+        chartService.updateChord(lineElement!, "Gbmaj");
+        const updatedLineElement = fakeChart.getFirstChordWrapper();
+        expect(updatedLineElement).not.toBeNull();
+        expect(updatedLineElement!.chordSymbol.quality).toEqual("maj");
     });
 });
