@@ -96,7 +96,7 @@ export class LineElementKeyService {
     }
     
     private handleHomeKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement): CurrentFocus | undefined{
-        let newFocus:LineElement;
+        let newFocus:LineElement | undefined;
         if (event.ctrlKey) {
             newFocus = FocusFinder.focusChartStart(chart);
         } else {
@@ -112,8 +112,8 @@ export class LineElementKeyService {
         return undefined;
     }
     
-    private handleEndKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
-        let newFocus:LineElement;
+    private handleEndKey(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement): CurrentFocus | undefined{
+        let newFocus:LineElement | undefined;
         if (event.ctrlKey) {
             newFocus = FocusFinder.focusChartEnd(chart);
         } else {
