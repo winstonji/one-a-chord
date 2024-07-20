@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { ChartContext } from "../../programWindow";
+import { ChartContext, useChartContext } from "../../programWindow";
 import { ChartService } from "../../../services/chartService";
 import { SelectionUtil } from "../../../utils/selectionUtil";
 import { ConstantFocusIds } from "../../types/currentFocus";
 
 function TitleComponenent(props: {title: string}){
     const {title} = props;
-    const {chartEditingState, setChartEditingState, setCurrentFocus}= useContext(ChartContext);
+    const {chartEditingState, setChartEditingState, setCurrentFocus}= useChartContext();
 
     const editableRef = useRef<HTMLHeadingElement>(null);
 

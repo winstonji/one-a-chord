@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, createContext } from 'react'
+import React, { useEffect, useState, useRef, createContext, useContext } from 'react'
 import Toolbar from './globalComponents/toolbar';
 import Canvas from './globalComponents/canvas';
 import { Chart } from '../model/chart';
@@ -6,11 +6,18 @@ import { generateFakeChart } from '../test/testUtils/chartFaker';
 import { ChartEditingState, IChartContext, } from './types/chartContext';
 import { CurrentFocus, UpdateCurrentFocusProps } from './types/currentFocus';
 import { UndoWrapper } from '../model/interfaces/undoWrapper';
-import isEqual from 'lodash/isEqual';
 import { KeyServiceResult } from '../services/interfaces/keyServiceResult';
 import { optionalSpread } from '../utils/optionalSpread';
 
-export const ChartContext = createContext<IChartContext>(null); 
+export const ChartContext = createContext<IChartContext | undefined>(undefined); 
+
+export const useChartContext = (): IChartContext => {
+    const context = useContext(ChartContext);
+    if (context === undefined) {
+      throw new Error('useChartContext must be used within a ChartProvider');
+    }
+    return context as IChartContext;
+}
 
 const ProgramWindow = () => {
 

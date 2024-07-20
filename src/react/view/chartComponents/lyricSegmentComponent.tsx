@@ -1,13 +1,13 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { LineElement } from '../../model/lineElement';
-import { ChartContext } from '../programWindow';
+import { ChartContext, useChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
 import { LyricSegmentKeyService } from '../../services/keyInputServices/lyricSegmentKeyService';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
-    const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useContext(ChartContext);
+    const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useChartContext();
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
     const currentFocus = chartEditingState.currentFocus;

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { ChartContext } from "../../programWindow";
+import { ChartContext, useChartContext } from "../../programWindow";
 import { ConstantFocusIds } from "../../types/currentFocus";
 import { SelectionUtil } from "../../../utils/selectionUtil";
 import { ChartService } from "../../../services/chartService";
@@ -7,7 +7,7 @@ import React from "react";
 
 function TimeLowerComponent(props: { signatureBottom: number }) {
     const { signatureBottom } = props;
-    const { chartEditingState, setChartEditingState, setCurrentFocus } = useContext(ChartContext);
+    const { chartEditingState, setChartEditingState, setCurrentFocus } = useChartContext();
 
     const editableRef = useRef<HTMLHeadingElement>(null);
 
