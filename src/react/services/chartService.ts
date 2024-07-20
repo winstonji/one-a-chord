@@ -145,7 +145,12 @@ export class ChartService {
             
         const index = line.children.findIndex((element) => element.id === updatedTarget.id);
 
-        if (index >= 0 && index + direction >= 0 && index + direction < line.children.length) {
+        if(index === -1 ){
+            throw new Error(`The LineElement with id ${updatedTarget.id} cannot be found in the array of children for line with id ${line.id}`);
+        }
+
+        //If we are not at either extremity of the current line, we will merge the current lineElement with the lineElement before or after it from the same line.
+        if (index + direction >= 0 && index + direction < line.children.length) {
             let mergedChordSymbol:string;
             let mergedLyricSegment:string;
             if (direction < 0) {
@@ -159,7 +164,9 @@ export class ChartService {
             updatedTarget.lyricSegment.lyric = mergedLyricSegment;
             line.children.splice(index + direction, 1);
             return updatedTarget;
-        } else {
+        }
+        //In this case, we will be at the extremity of the current line. So we either have to merge our line into the previous line, or the next line.
+        else {
             if (direction < 0) {
                 return this.mergeLineIntoPrevious(targetElement);
             } else {
@@ -249,16 +256,21 @@ export class ChartService {
         line.children.splice(deleteIndex, 1);
     }
 
-    public deleteNext(currentlyFocusedLineElement:LineElement): void{
+    public deleteNext(currentlyFocusedLineElement:LineElement): boolean{
         const line:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
         if (!line) {
             throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
       
         const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+        
         if (currentIndex === line.children.length - 1) {
+            const lineIndex = line.parent.children.findIndex((_line) => _line.id === line.id);
+            if(lineIndex === line.parent.children.length - 1){
+                return false;
+            }
             this.mergeNextIntoLine(currentlyFocusedLineElement);
-            return;
+            return true;
         }
         const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
         if(!deleteTarget){
@@ -267,6 +279,7 @@ export class ChartService {
         const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
 
         line.children.splice(deleteIndex, 1);
+        return true;
     }
 
     insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
