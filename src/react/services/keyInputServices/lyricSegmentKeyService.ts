@@ -136,7 +136,11 @@ export class LyricSegmentKeyService {
             }
         } else if (lineElement.getPrevious()){
             const chartService = ChartService.with(this.chartEditingState.chart);
-            const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
+            const newFocus: LineElement | undefined = chartService.mergeLineElement(lineElement, -1);
+            if(!newFocus){
+                throw new Error(`Unable to merge with line previous to ${lineElement.parent.id}`)
+            }
+
             const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
             return {
                 chart: chartService.finalize(),

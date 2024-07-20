@@ -131,7 +131,7 @@ export class ChartService {
         }
     }
 
-    public mergeLineElement(targetElement: LineElement, direction: -1 | 1): LineElement{
+    public mergeLineElement(targetElement: LineElement, direction: -1 | 1): LineElement | undefined{
         const line: Line | undefined= this.locateElement<Line>(targetElement.parent, this.chart);
         const updatedTarget: LineElement | undefined = this.locateElement<LineElement>(targetElement, this.chart);
 
@@ -175,13 +175,18 @@ export class ChartService {
         }
     }
 
-    private mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement{
+    private mergeLineIntoPrevious(currentlyFocusedLineElement:LineElement): LineElement | undefined{
         const secondLine:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
         if(!secondLine){
             throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
 
-        let firstLine:Line | undefined = this.locateElement<Line>(secondLine.getPrevious(), this.chart);
+        const _secondLine = secondLine.getPrevious();
+        if(!_secondLine){
+            return undefined;
+        }
+
+        let firstLine:Line | undefined = this.locateElement<Line>(_secondLine, this.chart);
         if(!firstLine){
             throw new Error(`Line with id ${secondLine.getPrevious().id} not found`);
         }
@@ -206,13 +211,19 @@ export class ChartService {
         return firstLine.children[newFocusIndex];
     }
 
-    public mergeNextIntoLine(currentlyFocusedLineElement:LineElement): LineElement{
+    public mergeNextIntoLine(currentlyFocusedLineElement:LineElement): LineElement | undefined{
         let firstLine: Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
         if (!firstLine) {
             throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
 
-        const secondLine: Line | undefined= this.locateElement<Line>(firstLine.getNext(), this.chart);
+
+        const _secondLine = firstLine.getNext();
+        if(!_secondLine){
+            return undefined;
+        }
+
+        const secondLine: Line | undefined= this.locateElement<Line>(_secondLine, this.chart);
         if (!secondLine) {
             throw new Error(`Line with id ${firstLine.getNext().id} not found`);
         }
@@ -256,7 +267,7 @@ export class ChartService {
         return true;
     }
 
-    public deleteNext(currentlyFocusedLineElement:LineElement): boolean{
+    public deleteNext(currentlyFocusedLineElement:LineElement): boolean{        
         const line:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
         if (!line) {
             throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
