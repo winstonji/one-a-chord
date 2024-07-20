@@ -229,38 +229,44 @@ export class ChartService {
         return currentlyFocusedLineElement;
     }
 
-    public deletePrevious(currentlyFocusedLineElement:LineElement){
+    public deletePrevious(currentlyFocusedLineElement:LineElement): void{
         const line:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        if (line) {
-            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
-            if (currentIndex === 0) {
-                return this.mergeLineIntoPrevious(currentlyFocusedLineElement);
-            }
-            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
-            if(!deleteTarget){
-                throw new Error(`Line Element with id ${currentlyFocusedLineElement.getPrevious().id} not found`);
-            }
-            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
-
-            line.children.splice(deleteIndex, 1);
+        if (!line) {
+            throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
+        
+        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+        if (currentIndex === 0) {
+            this.mergeLineIntoPrevious(currentlyFocusedLineElement);
+            return;
+        }
+        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getPrevious(), this.chart);
+        if(!deleteTarget){
+            throw new Error(`Line Element with id ${currentlyFocusedLineElement.getPrevious().id} not found`);
+        }
+        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+        line.children.splice(deleteIndex, 1);
     }
 
-    public deleteNext(currentlyFocusedLineElement:LineElement){
+    public deleteNext(currentlyFocusedLineElement:LineElement): void{
         const line:Line | undefined = this.locateElement<Line>(currentlyFocusedLineElement.parent, this.chart);
-        if (line) {            
-            const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
-            if (currentIndex === line.children.length - 1) {
-                return this.mergeNextIntoLine(currentlyFocusedLineElement);
-            }
-            const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
-            if(!deleteTarget){
-                throw new Error(`Line Element with id ${currentlyFocusedLineElement.getPrevious().id} not found`);
-            }
-            const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
-
-            line.children.splice(deleteIndex, 1);
+        if (!line) {
+            throw new Error(`Line with id ${currentlyFocusedLineElement.parent.id} not found`);
         }
+      
+        const currentIndex = line.children.findIndex((element) => element.id === currentlyFocusedLineElement.id);
+        if (currentIndex === line.children.length - 1) {
+            this.mergeNextIntoLine(currentlyFocusedLineElement);
+            return;
+        }
+        const deleteTarget = this.locateElement<LineElement>(currentlyFocusedLineElement.getNext(), this.chart);
+        if(!deleteTarget){
+            throw new Error(`Line Element with id ${currentlyFocusedLineElement.getPrevious().id} not found`);
+        }
+        const deleteIndex = line.children.findIndex((element) => element.id === deleteTarget.id);
+
+        line.children.splice(deleteIndex, 1);
     }
 
     insertNewBlockAfter(currentlyFocusedLineElement: LineElement, cursorPosition: number): Block {
@@ -414,7 +420,7 @@ export class ChartService {
         if (currentIdentifiable.children){
             currentLevelItems = currentIdentifiable.children;
         }
-        
+
         if(!currentLevelItems){
             console.error("Unable to locate identifiable in scanned levels, no more levels to scan.")
             return undefined;

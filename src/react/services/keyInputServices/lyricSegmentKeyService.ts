@@ -121,7 +121,7 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleBackspace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+    private handleBackspace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement): ChartEditingState{
         event.preventDefault();
         if (event.ctrlKey) {
             const chartService = ChartService.with(chart);
@@ -153,6 +153,14 @@ export class LyricSegmentKeyService {
                         id: newFocus.lyricSegment.id,
                         position: cursorPositionAfterMerge
                     }
+                }
+            }
+        } else {
+            return {
+                chart: chart,
+                currentFocus: {
+                    id: lineElement.id,
+                    position: 0
                 }
             }
         }
