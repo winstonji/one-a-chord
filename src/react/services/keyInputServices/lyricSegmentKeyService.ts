@@ -119,11 +119,14 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleBackspace(event:React.KeyboardEvent, lineElement:LineElement): ChartEditingState{
+    private handleBackspace(event:React.KeyboardEvent, lineElement:LineElement): ChartEditingState | undefined{
         event.preventDefault();
         if (event.ctrlKey) {
             const chartService = ChartService.with(this.chartEditingState.chart);
-            chartService.deletePrevious(lineElement);
+            const changed = chartService.deletePrevious(lineElement);
+            if(!changed){
+                return undefined;
+            }
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
