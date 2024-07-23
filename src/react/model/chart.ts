@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class Chart {
     
     public metaData: ChartMetaData;
-    public children?:Block[];
+    public children:Block[];
 
     constructor(){}
 }

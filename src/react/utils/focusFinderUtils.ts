@@ -57,7 +57,7 @@ export class FocusFinder {
         }
     }
 
-    public static focusChartStart(chart:Chart): LineElement{
+    public static focusChartStart(chart:Chart): LineElement | undefined{
         if(!chart.children){
             console.error("Chart has no block children.");
             return;
@@ -80,7 +80,7 @@ export class FocusFinder {
         return firstLine.children[0];
     }
 
-    public static focusChartEnd(chart:Chart): LineElement{
+    public static focusChartEnd(chart:Chart): LineElement | undefined{
         if(!chart.children){
             console.error("Chart has no block children.");
             return;

@@ -24,12 +24,12 @@ export class Block implements Identifiable{
         return this.getNeighbor(-1);
     }
 
-    getNeighbor = function(direction: 1 | -1): Block{
-        const currentIndex:number = this.chart.children.findIndex(block => block.id === this.id)
+    getNeighbor = function(direction: 1 | -1): Block | undefined{
+        const currentIndex:number = this.chart.children.findIndex((block: Block) => block.id === this.id)
         const neighborIndex = currentIndex + direction;
         if (neighborIndex < this.chart.children.length) {
             return this.chart.children[neighborIndex];
         }
-        return null;
+        return undefined;
     }
 }

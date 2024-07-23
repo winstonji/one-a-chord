@@ -23,7 +23,7 @@ export class LyricSegmentKeyService {
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): KeyServiceResult{
+    ): KeyServiceResult | undefined{
         const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
         let result: KeyServiceResult | undefined = globalKeyService.handleGlobalKeyDown(event);
 
@@ -48,13 +48,11 @@ export class LyricSegmentKeyService {
         } else if (event.key === 'Backspace' && cursorPosition === 0) {
             result = this.handleBackspace(
                 event,
-                this.chartEditingState.chart,
                 lineElement
             );
         } else if (event.key === 'Delete' && cursorPosition === contentLength) {
             result = this.handleDelete(
                 event,
-                this.chartEditingState,
                 lineElement,
                 contentLength
             );
@@ -94,11 +92,12 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
+    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number): ChartEditingState{
         event.preventDefault();
         if (event.ctrlKey) {
             const chartService = ChartService.with(chart);
             const newBlock:Block = chartService.insertNewBlockAfter(lineElement, cursorPosition);
+
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -120,11 +119,14 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleBackspace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+    private handleBackspace(event:React.KeyboardEvent, lineElement:LineElement): ChartEditingState | undefined{
         event.preventDefault();
         if (event.ctrlKey) {
-            const chartService = ChartService.with(chart);
-            chartService.deletePrevious(lineElement);
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const changed = chartService.deletePrevious(lineElement);
+            if(!changed){
+                return undefined;
+            }
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -132,36 +134,40 @@ export class LyricSegmentKeyService {
                     position: 0
                 }
             }
-        } else if (lineElement.getPrevious() !== null){
-            const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
-            const chartService = ChartService.with(chart);
-            const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
+        } else if (lineElement.getPrevious()){
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const newFocus: LineElement | undefined = chartService.mergeLineElement(lineElement, -1);
+            if(!newFocus){
+                throw new Error(`Unable to merge with line previous to ${lineElement.parent.id}`)
+            }
+
             const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
-            if (lineElementIndex === 0) {
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        id: newFocus.lyricSegment.id,
-                        position: 0
-                    }
+            return {
+                chart: chartService.finalize(),
+                currentFocus: {
+                    id: newFocus.lyricSegment.id,
+                    position: lineElementIndex === 0? 0: lineElement.getPrevious().lyricSegment.lyric.length
                 }
-            } else {
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        id: newFocus.lyricSegment.id,
-                        position: cursorPositionAfterMerge
-                    }
-                }
+            }
+        } 
+
+        return {
+            chart: this.chartEditingState.chart,
+            currentFocus: {
+                id: lineElement.id,
+                position: 0
             }
         }
     }
     
-    private handleDelete(event:React.KeyboardEvent, chartEditingState:ChartEditingState, lineElement:LineElement, contentLength:number){
+    private handleDelete(event:React.KeyboardEvent, lineElement:LineElement, contentLength:number): ChartEditingState | undefined{
         event.preventDefault();
         if (event.ctrlKey) {
-            const chartService = ChartService.with(chartEditingState.chart);
-            chartService.deleteNext(lineElement);
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const changed = chartService.deleteNext(lineElement);
+            if(!changed){
+                return undefined;
+            }
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -169,15 +175,23 @@ export class LyricSegmentKeyService {
                     position: contentLength
                 }
             }
-        } else {
-            const chartService = ChartService.with(chartEditingState.chart);
+        } else if(lineElement.getNext()){
+            const chartService = ChartService.with(this.chartEditingState.chart);
             chartService.mergeLineElement(lineElement, 1);
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
-                    ...chartEditingState.currentFocus,
+                    ...this.chartEditingState.currentFocus,
                     position: contentLength
                 }
+            }
+        }
+
+        return {
+            chart: this.chartEditingState.chart,
+            currentFocus: {
+                id: lineElement.id,
+                position: contentLength
             }
         }
     }
