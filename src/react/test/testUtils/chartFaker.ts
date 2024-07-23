@@ -10,7 +10,7 @@ export class FakeChart{
 
     public chart: Chart;
 
-    constructor(chart){
+    constructor(chart: Chart){
         this.chart = chart;
     }
 
@@ -19,11 +19,11 @@ export class FakeChart{
     }
 
     public getFirstLine(): Line | undefined{
-        return this.getFirstBlock().children[0];
+        return this.getFirstBlock()?.children[0];
     }
 
     public getFirstChordWrapper(): LineElement | undefined{
-        return this.getFirstLine().children[0];
+        return this.getFirstLine()?.children[0];
     }
 }
 

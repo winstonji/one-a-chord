@@ -41,7 +41,7 @@ export class LineElement implements Identifiable{
         return lineElement;
     }
 
-    getNeighbor = function(direction: 1 | -1): LineElement{
+    getNeighbor = function(direction: 1 | -1): LineElement | undefined{
         const line:Line = this.parent;
         const currentIndex:number = line.children.findIndex(le => le.id === this.id);
         const neighborIndex = currentIndex + direction;
@@ -50,11 +50,11 @@ export class LineElement implements Identifiable{
         }
         else if (neighborIndex < 0) {
             const previousLine = line.getPrevious();
-            return previousLine ? previousLine.children[previousLine.children.length - 1] : null;
+            return previousLine ? previousLine.children[previousLine.children.length - 1] : undefined;
         } else if (neighborIndex >= line.children.length) {
             const nextLine = line.getNext();
-            return nextLine ? nextLine.children[0] : null;
+            return nextLine ? nextLine.children[0] : undefined;
         }
-        return null;
+        return undefined;
     }
 }

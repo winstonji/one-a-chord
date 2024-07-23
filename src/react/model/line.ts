@@ -1,11 +1,10 @@
 import { Block } from "./block";
 import { LineElement } from "./lineElement";
 import { Identifiable } from "./interfaces/identifiable";
-import { v4 as uuidv4 } from 'uuid';
 
 export class Line implements Identifiable{
 
-    public children?:LineElement[];
+    public children:LineElement[];
     public id: string;
     public parent: Block;
 
@@ -22,7 +21,7 @@ export class Line implements Identifiable{
         return this.getNeighbor(-1);
     }
 
-    getNeighbor = function(direction: 1 | -1): Line{
+    getNeighbor = function(direction: 1 | -1): Line | undefined{
         const block:Block = this.parent;
         const currentIndex:number = block.children.findIndex(ln => ln.id === this.id)
         const neighborIndex = currentIndex + direction;
@@ -31,11 +30,11 @@ export class Line implements Identifiable{
         }
         else if (neighborIndex < 0) {
             const previousBlock = block.getPrevious();
-            return previousBlock ? previousBlock.children[previousBlock.children.length - 1] : null;
+            return previousBlock ? previousBlock.children[previousBlock.children.length - 1] : undefined;
         } else if (neighborIndex >= block.children.length) {
             const nextBlock = block.getNext();
-            return nextBlock ? nextBlock.children[0] : null;
+            return nextBlock ? nextBlock.children[0] : undefined;
         }
-        return null;
+        return undefined;
     }
 }

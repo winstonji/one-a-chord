@@ -1,13 +1,13 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { LineElement } from '../../model/lineElement';
-import { ChartContext } from '../programWindow';
+import { ChartContext, useChartContext } from '../programWindow';
 import { ChartService } from '../../services/chartService';
 import { SelectionUtil } from '../../utils/selectionUtil';
 import { LyricSegmentKeyService } from '../../services/keyInputServices/lyricSegmentKeyService';
 
 function LyricSegmentComponent(lineElement: LineElement) {
     
-    const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
+    const {chartEditingState, setChartEditingState, setCurrentFocus, undoRef}= useChartContext();
     const editableRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
     const currentFocus = chartEditingState.currentFocus;
@@ -45,25 +45,27 @@ function LyricSegmentComponent(lineElement: LineElement) {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const cursorPosition = SelectionUtil.getCursorPos();
-        const contentLength = editableRef.current.textContent.length;    
-
+        let contentLength: number;
+        if (!editableRef.current?.textContent) {
+            contentLength = 0;
+        } else {
+            contentLength = editableRef.current.textContent.length;
+        }
+    
         setChartEditingState((chartEditingState) => {
-            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState);
-            const updateResult = lyricSegmentKeyService.handleLyricSegmentKeyDown(
-                                             event,
-                                             lineElement,
-                                             cursorPosition,
-                                             contentLength
-                                        );
-
-            //Only update the react state if the focus or the chart contents (or both) changed. Otherwise there is no reason to re-render.
-            if(updateResult.updated){
-                return updateResult.chartEditingState
-            }
-
-            return chartEditingState;
+            const lyricSegmentKeyService = new LyricSegmentKeyService(chartEditingState, undoRef.current);
+            const newState = lyricSegmentKeyService.handleLyricSegmentKeyDown(
+                event,
+                lineElement,
+                cursorPosition,
+                contentLength
+            );
+    
+            // Ensure newState is not undefined
+            return newState || chartEditingState;
         });
     };
+    
     
 
     //This keeps the current focus in sync with the cursor in the DOM when you click an element.

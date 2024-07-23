@@ -4,7 +4,9 @@
 		"module": "ESNext",
 		"moduleResolution": "node",
 		"removeComments": false,
-		"noImplicitAny": false,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"strictNullChecks": true,
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": "./src",
 		"paths": {

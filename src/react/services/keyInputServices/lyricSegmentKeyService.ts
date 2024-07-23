@@ -4,18 +4,18 @@ import { LineElement } from "../../model/lineElement";
 import { Chart } from "../../model/chart";
 import { Block } from "../../model/block";
 import { LineElementKeyService } from "./lineElementKeyService";
-
-export interface LyricSegmentKeyServiceResult{
-    updated: boolean,
-    chartEditingState?: ChartEditingState
-}
+import { UndoWrapper } from "../../model/interfaces/undoWrapper";
+import { GlobalKeyService } from "./globalKeyService";
+import { KeyServiceResult } from "../interfaces/keyServiceResult";
 
 export class LyricSegmentKeyService {
 
     private chartEditingState: ChartEditingState;
+    private undoWrapper: UndoWrapper
 
-    public constructor(chartEditingState: ChartEditingState){
+    public constructor(chartEditingState: ChartEditingState, undoWrapper:UndoWrapper){
         this.chartEditingState = chartEditingState;
+        this.undoWrapper = undoWrapper;
     }
 
     public handleLyricSegmentKeyDown(
@@ -23,67 +23,62 @@ export class LyricSegmentKeyService {
         lineElement: LineElement,
         cursorPosition: number,
         contentLength: number
-    ): LyricSegmentKeyServiceResult{
-    
-        let updateResult;
-        
+    ): KeyServiceResult | undefined{
+        const globalKeyService = new GlobalKeyService(this.chartEditingState, this.undoWrapper);
+        let result: KeyServiceResult | undefined = globalKeyService.handleGlobalKeyDown(event);
+
+        if(result){
+            return result;
+        }
+
         if (event.key === ' ') {
-            updateResult = this.handleSpace(
+            result = this.handleSpace(
                 event,
                 this.chartEditingState.chart,
                 lineElement,
                 cursorPosition
             );
         } else if (event.key === 'Enter') {
-            updateResult = this.handleEnter(
+            result = this.handleEnter(
                 event,
                 this.chartEditingState.chart,
                 lineElement,
                 cursorPosition
             );
         } else if (event.key === 'Backspace' && cursorPosition === 0) {
-            updateResult = this.handleBackspace(
+            result = this.handleBackspace(
                 event,
-                this.chartEditingState.chart,
                 lineElement
             );
         } else if (event.key === 'Delete' && cursorPosition === contentLength) {
-            updateResult = this.handleDelete(
+            result = this.handleDelete(
                 event,
-                this.chartEditingState,
                 lineElement,
                 contentLength
             );
         } else if (event.ctrlKey && event.code === 'KeyK') {
-            updateResult = {
+            result = {
                 chart: {...this.chartEditingState.chart},
                 currentFocus: this.handleEditFocus(event, lineElement)
             }
         } else {
             const lineElementKeyService = new LineElementKeyService('LYRIC', this.chartEditingState);
-            const result = lineElementKeyService.handleLineElementKeyDown(
+            const lineResult = lineElementKeyService.handleLineElementKeyDown(
                     event,
                     lineElement,
                     cursorPosition,
                     contentLength
                 );
     
-            if(result.updated){
-                updateResult = {
+            if(lineResult){
+                result = {
                     chart: {...this.chartEditingState.chart},
-                    currentFocus: result.focus!
+                    ...lineResult
                 }
             }
         }
     
-        if(updateResult){
-            return {
-                updated: true,
-                chartEditingState: {...updateResult}
-            }
-        }
-        
-        return {updated: false}
+        return result;
     }
     
     private handleSpace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
@@ -97,11 +92,12 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number){
+    private handleEnter(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement, cursorPosition:number): ChartEditingState{
         event.preventDefault();
         if (event.ctrlKey) {
             const chartService = ChartService.with(chart);
             const newBlock:Block = chartService.insertNewBlockAfter(lineElement, cursorPosition);
+
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -123,11 +119,14 @@ export class LyricSegmentKeyService {
         }
     }
     
-    private handleBackspace(event:React.KeyboardEvent, chart:Chart, lineElement:LineElement){
+    private handleBackspace(event:React.KeyboardEvent, lineElement:LineElement): ChartEditingState | undefined{
         event.preventDefault();
         if (event.ctrlKey) {
-            const chartService = ChartService.with(chart);
-            chartService.deletePrevious(lineElement);
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const changed = chartService.deletePrevious(lineElement);
+            if(!changed){
+                return undefined;
+            }
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -135,36 +134,40 @@ export class LyricSegmentKeyService {
                     position: 0
                 }
             }
-        } else if (lineElement.getPrevious() !== null){
-            const cursorPositionAfterMerge = lineElement.getPrevious().lyricSegment.lyric.length;
-            const chartService = ChartService.with(chart);
-            const newFocus: LineElement = chartService.mergeLineElement(lineElement, -1);
+        } else if (lineElement.getPrevious()){
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const newFocus: LineElement | undefined = chartService.mergeLineElement(lineElement, -1);
+            if(!newFocus){
+                throw new Error(`Unable to merge with line previous to ${lineElement.parent.id}`)
+            }
+
             const lineElementIndex:number = lineElement.parent.children.findIndex((element) => element.id === lineElement.id);
-            if (lineElementIndex === 0) {
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        id: newFocus.lyricSegment.id,
-                        position: 0
-                    }
+            return {
+                chart: chartService.finalize(),
+                currentFocus: {
+                    id: newFocus.lyricSegment.id,
+                    position: lineElementIndex === 0? 0: lineElement.getPrevious().lyricSegment.lyric.length
                 }
-            } else {
-                return {
-                    chart: chartService.finalize(),
-                    currentFocus: {
-                        id: newFocus.lyricSegment.id,
-                        position: cursorPositionAfterMerge
-                    }
-                }
+            }
+        } 
+
+        return {
+            chart: this.chartEditingState.chart,
+            currentFocus: {
+                id: lineElement.id,
+                position: 0
             }
         }
     }
     
-    private handleDelete(event:React.KeyboardEvent, chartEditingState:ChartEditingState, lineElement:LineElement, contentLength:number){
+    private handleDelete(event:React.KeyboardEvent, lineElement:LineElement, contentLength:number): ChartEditingState | undefined{
         event.preventDefault();
         if (event.ctrlKey) {
-            const chartService = ChartService.with(chartEditingState.chart);
-            chartService.deleteNext(lineElement);
+            const chartService = ChartService.with(this.chartEditingState.chart);
+            const changed = chartService.deleteNext(lineElement);
+            if(!changed){
+                return undefined;
+            }
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
@@ -172,15 +175,23 @@ export class LyricSegmentKeyService {
                     position: contentLength
                 }
             }
-        } else {
-            const chartService = ChartService.with(chartEditingState.chart);
+        } else if(lineElement.getNext()){
+            const chartService = ChartService.with(this.chartEditingState.chart);
             chartService.mergeLineElement(lineElement, 1);
             return {
                 chart: chartService.finalize(),
                 currentFocus: {
-                    ...chartEditingState.currentFocus,
+                    ...this.chartEditingState.currentFocus,
                     position: contentLength
                 }
+            }
+        }
+
+        return {
+            chart: this.chartEditingState.chart,
+            currentFocus: {
+                id: lineElement.id,
+                position: contentLength
             }
         }
     }

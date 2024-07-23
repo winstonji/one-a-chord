@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { ChartContext } from '../programWindow';
+import { ChartContext, useChartContext } from '../programWindow';
 import { ChartMetaData } from '../../model/chartMetaData';
 import { Block } from '../../model/block';
 import BlockComponent from '../chartComponents/blockComponent';
 import ChartMetaDataComponent from '../chartComponents/metadata/chartMetaDataComponent';
 
 function SingleColumn(){
-    const {chartEditingState} = useContext(ChartContext);
+    const {chartEditingState} = useChartContext();
     const chart = chartEditingState.chart
     const metadata: ChartMetaData = chart.metaData;
     const blocks: Block[] = chart.children;

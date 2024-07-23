@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { ChartContext } from '../programWindow';
+import { ChartContext, useChartContext } from '../programWindow';
 import { Block } from '../../model/block';
 import LineComponent from './lineComponent';
 import { Line } from '../../model/line';
@@ -11,7 +11,7 @@ function BlockComponent (block:Block){
 
 	const lines:Line[] = block.children;
 
-	const {chartEditingState, setChartEditingState, setCurrentFocus }= useContext(ChartContext);
+	const {chartEditingState, setChartEditingState, setCurrentFocus }= useChartContext();
 	const editableHeader = useRef<HTMLHeadingElement>(null); // Ref for the contentEditable div
 
 	const currentFocus = chartEditingState.currentFocus;
